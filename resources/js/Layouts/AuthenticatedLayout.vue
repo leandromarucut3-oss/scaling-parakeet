@@ -14,9 +14,9 @@ const isAdmin = computed(() => page.props.auth?.user?.roles?.includes('admin'));
 const adminNotifications = computed(() => page.props.admin_notifications ?? {});
 const pendingWithdrawals = computed(() => adminNotifications.value.pending_withdrawals ?? 0);
 const pendingDeposits = computed(() => adminNotifications.value.pending_deposits ?? 0);
-const referralCode = computed(() => page.props.auth?.user?.referral_code ?? '');
+const referralUsername = computed(() => page.props.auth?.user?.name ?? '');
 const referralLink = computed(() =>
-    referralCode.value ? route('register.referral', referralCode.value) : ''
+    referralUsername.value ? route('register.referral', referralUsername.value) : ''
 );
 
 const copyReferralLink = async () => {

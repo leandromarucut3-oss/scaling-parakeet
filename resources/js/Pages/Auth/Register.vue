@@ -11,17 +11,12 @@ const props = defineProps({
         type: String,
         default: '',
     },
-    referrerName: {
-        type: String,
-        default: '',
-    },
 });
 
 const form = useForm({
     name: '',
     email: '',
     referral_code: props.referralCode,
-    referrer_name: props.referrerName,
     password: '',
     password_confirmation: '',
 });
@@ -83,27 +78,10 @@ const submit = () => {
                     class="mt-2 block w-full rounded-md border-slate-200 bg-slate-50/70 focus:border-emerald-500 focus:ring-emerald-500"
                     v-model="form.referral_code"
                     autocomplete="off"
-                    placeholder="e.g. AB12CD34EF"
-                />
-
-                <InputError class="mt-2" :message="form.errors.referral_code" />
-            </div>
-
-            <div>
-                <InputLabel for="referrer_name" value="Inviter username" class="text-slate-700" />
-
-                <TextInput
-                    id="referrer_name"
-                    type="text"
-                    class="mt-2 block w-full rounded-md border-slate-200 bg-slate-50/70 focus:border-emerald-500 focus:ring-emerald-500"
-                    v-model="form.referrer_name"
-                    autocomplete="off"
                     placeholder="their username"
                 />
 
-                <InputError class="mt-2" :message="form.errors.referrer_name" />
-
-                <p class="mt-2 text-xs text-slate-500">Provide a referral code or inviter username to continue.</p>
+                <InputError class="mt-2" :message="form.errors.referral_code" />
             </div>
 
             <div>

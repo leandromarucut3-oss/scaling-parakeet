@@ -22,11 +22,9 @@ class RegisteredUserController extends Controller
     public function create(Request $request): Response
     {
         $referralCode = $request->route('referralCode') ?? $request->query('ref');
-        $referrerName = $request->query('referrer');
 
         return Inertia::render('Auth/Register', [
             'referralCode' => $referralCode,
-            'referrerName' => $referrerName,
         ]);
     }
 
@@ -41,15 +39,12 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255|unique:'.User::class,
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'referral_code' => ['nullable', 'string', 'max:32', 'exists:users,referral_code', 'required_without:referrer_name'],
-            'referrer_name' => ['nullable', 'string', 'max:255', 'exists:users,name', 'required_without:referral_code'],
+            'referral_code' => ['nullable', 'string', 'max:255', 'exists:users,name'],
         ]);
 
         $referrer = null;
         if ($request->filled('referral_code')) {
-            $referrer = User::where('referral_code', $request->string('referral_code'))->first();
-        } elseif ($request->filled('referrer_name')) {
-            $referrer = User::where('name', $request->string('referrer_name'))->first();
+            $referrer = User::where('name', $request->string('referral_code'))->first();
         }
 
         $user = User::create([
