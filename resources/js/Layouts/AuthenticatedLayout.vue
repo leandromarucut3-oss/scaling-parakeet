@@ -46,11 +46,7 @@ const copyReferralLink = async () => {
                             <!-- Logo -->
                             <div class="shrink-0 flex items-center gap-3">
                                 <button type="button" class="flex items-center gap-3" @click="showSidebar = true">
-                                    <ApplicationLogo class="block h-9 w-auto" />
-                                    <div class="flex flex-col justify-center leading-none">
-                                        <div class="text-sm font-semibold text-white">Morrisons</div>
-                                        <div class="text-[10px] tracking-[0.3em] text-amber-300">CORPORATE</div>
-                                    </div>
+                                    <ApplicationLogo class="block h-12 w-auto" />
                                 </button>
                             </div>
 

@@ -11,11 +11,7 @@ import { Link } from '@inertiajs/vue3';
 
         <div class="relative flex min-h-screen flex-col items-center justify-center px-4 py-10">
             <Link href="/" class="mb-6 flex items-center gap-3">
-                <ApplicationLogo class="h-10 w-10" />
-                <div class="leading-tight">
-                    <div class="text-base font-semibold text-emerald-800">Morrisons</div>
-                    <div class="text-xs tracking-[0.3em] text-emerald-700/70">CORPORATE</div>
-                </div>
+                <ApplicationLogo class="h-10 w-auto" />
             </Link>
 
             <div class="w-full max-w-xl rounded-2xl bg-white/95 p-10 shadow-xl ring-1 ring-slate-900/5">

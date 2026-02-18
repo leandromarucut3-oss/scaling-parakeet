@@ -48,11 +48,7 @@ defineProps({
             <div class="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
                 <div>
                     <div class="flex items-center gap-3">
-                        <ApplicationLogo class="h-12 w-12" />
-                        <div class="leading-tight">
-                            <div class="text-lg font-semibold text-emerald-900">Morrisons</div>
-                            <div class="text-xs tracking-[0.35em] text-emerald-700/70">CORPORATE</div>
-                        </div>
+                        <ApplicationLogo class="h-12 w-auto" />
                     </div>
 
                     <h1 class="mt-6 text-4xl font-semibold text-emerald-950 lg:text-5xl">
