@@ -44,6 +44,14 @@ const formattedDailyInterest = computed(() =>
     currency.format((dailyInterestCents.value ?? 0) / 100)
 );
 
+const portfolioValueCents = computed(() =>
+    (user.value?.balance_cents ?? 0) + (totalInvestmentCents.value ?? 0)
+);
+
+const formattedPortfolioValue = computed(() =>
+    currency.format((portfolioValueCents.value ?? 0) / 100)
+);
+
 const formatCurrency = (cents) => currency.format((cents ?? 0) / 100);
 
 const withdrawForm = useForm({
@@ -77,36 +85,36 @@ const submitWithdrawal = () => {
 
         <div class="py-10">
             <div class="max-w-7xl mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
-                <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-700 p-8 text-white shadow-xl">
-                    <div class="absolute -right-10 -top-14 h-40 w-40 rounded-full bg-white/10"></div>
-                    <div class="absolute bottom-0 right-16 h-24 w-24 rounded-full bg-white/10"></div>
+                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-800 p-6 text-white shadow-lg">
+                    <div class="absolute -right-10 -top-14 h-40 w-40 rounded-full bg-white/5"></div>
+                    <div class="absolute bottom-2 right-16 h-24 w-24 rounded-full bg-white/5"></div>
                     <div class="relative">
-                        <div class="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-100">
-                            Morrisons investor wallet
+                        <div class="text-xs font-semibold uppercase tracking-[0.15em] text-emerald-100">
+                            Account summary
                         </div>
-                        <div class="mt-4 text-3xl font-semibold sm:text-4xl">Account balance</div>
-                        <div class="mt-3 text-4xl font-semibold sm:text-5xl">{{ formattedBalance }}</div>
-                        <div v-if="user" class="mt-4 text-sm text-emerald-100">
+                        <div class="mt-3 text-lg font-semibold text-emerald-100">Available balance</div>
+                        <div class="mt-2 text-4xl font-bold sm:text-5xl">{{ formattedBalance }}</div>
+                        <div v-if="user" class="mt-3 text-xs text-emerald-200">
                             Welcome back, <span class="font-semibold text-white">{{ user.name }}</span>
                             <span class="text-emerald-200">({{ user.email }})</span>
                         </div>
 
-                        <div class="mt-6 flex flex-wrap gap-3">
+                        <div class="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                             <Link
                                 :href="route('shares.buy')"
-                                class="inline-flex items-center rounded-full bg-white px-5 py-2 text-xs font-semibold uppercase tracking-widest text-emerald-900 transition hover:bg-emerald-50"
+                                class="inline-flex items-center rounded-md bg-white px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-900 transition hover:bg-emerald-50"
                             >
-                                Buy shares
+                                Invest
                             </Link>
                             <button
-                                class="inline-flex items-center rounded-full border border-white/40 px-5 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-white/10"
+                                class="inline-flex items-center rounded-md border border-white/30 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-white/10"
                                 type="button"
                                 @click="handleWithdrawClick"
                             >
                                 Withdraw
                             </button>
                             <button
-                                class="inline-flex items-center rounded-full border border-white/40 px-5 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-white/10"
+                                class="inline-flex items-center rounded-md border border-white/30 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-white/10"
                                 type="button"
                             >
                                 Statements
@@ -122,22 +130,30 @@ const submitWithdrawal = () => {
                     </div>
                 </div>
 
-                <div class="grid gap-6 md:grid-cols-2">
-                    <div class="rounded-2xl bg-white/95 p-6 shadow-lg ring-1 ring-emerald-100">
-                        <div class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
-                            Total investment
+                <div class="grid gap-5 md:grid-cols-3">
+                    <div class="rounded-2xl bg-white/95 p-5 shadow-md ring-1 ring-emerald-100">
+                        <div class="text-[11px] font-semibold uppercase tracking-[0.15em] text-emerald-700">
+                            Total invested capital
                         </div>
-                        <div class="mt-3 text-3xl font-semibold text-emerald-950">{{ formattedTotalInvestment }}</div>
+                        <div class="mt-2 text-2xl font-bold text-emerald-950">{{ formattedTotalInvestment }}</div>
                         <div class="mt-2 text-xs text-slate-500">Sum of all completed purchases.</div>
                     </div>
 
-                    <div class="rounded-2xl bg-emerald-800 p-6 text-white shadow-xl">
-                        <div class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-100">
-                            Morrisons <span class="text-amber-300">Daily</span> earnings
+                    <div class="rounded-2xl bg-white/95 p-5 shadow-md ring-1 ring-emerald-100">
+                        <div class="text-[11px] font-semibold uppercase tracking-[0.15em] text-emerald-700">
+                            Portfolio value
                         </div>
-                        <div class="mt-3 text-3xl font-semibold sm:text-4xl">{{ formattedDailyInterest }}</div>
+                        <div class="mt-2 text-2xl font-bold text-emerald-950">{{ formattedPortfolioValue }}</div>
+                        <div class="mt-2 text-xs text-slate-500">Balance plus invested capital.</div>
+                    </div>
+
+                    <div class="rounded-2xl bg-emerald-900 p-5 text-white shadow-lg">
+                        <div class="text-[11px] font-semibold uppercase tracking-[0.15em] text-emerald-100">
+                            Daily interest
+                        </div>
+                        <div class="mt-2 text-2xl font-bold">{{ formattedDailyInterest }}</div>
                         <div class="mt-2 text-xs text-emerald-100">
-                            Total Interest Earned: <span class="font-semibold text-white">{{ formattedInterestEarned }}</span>
+                            Total interest earned: <span class="font-semibold text-white">{{ formattedInterestEarned }}</span>
                         </div>
                     </div>
 

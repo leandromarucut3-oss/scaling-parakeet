@@ -16,6 +16,14 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RoleSeeder::class);
 
+        $testUser = User::firstOrCreate(
+            ['email' => 'testuser@example.com'],
+            [
+                'name' => 'Mico',
+                'password' => Hash::make('Abc123456'),
+            ]
+        );
+
         $adminEmail = env('ADMIN_EMAIL');
         $adminPassword = env('ADMIN_PASSWORD');
 
