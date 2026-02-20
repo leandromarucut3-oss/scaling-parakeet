@@ -41,19 +41,19 @@ class HandleInertiaRequests extends Middleware
         $recentActivity = [];
 
         if ($user) {
-            $totalInvestmentCents = Purchase::query()
+            $totalInvestmentCents = (int) Purchase::query()
                 ->where('user_id', $user->id)
                 ->sum('amount_cents');
 
-            $referralCommissionCents = Purchase::query()
+            $referralCommissionCents = (int) Purchase::query()
                 ->where('referrer_id', $user->id)
                 ->sum('referral_commission_cents');
 
-            $interestEarnedCents = Purchase::query()
+            $interestEarnedCents = (int) Purchase::query()
                 ->where('user_id', $user->id)
                 ->sum('interest_earned_cents');
 
-            $dailyInterestCents = Purchase::query()
+            $dailyInterestCents = (int) Purchase::query()
                 ->where('user_id', $user->id)
                 ->whereDate('last_interest_at', now()->toDateString())
                 ->get(['amount_cents', 'daily_interest_bps'])

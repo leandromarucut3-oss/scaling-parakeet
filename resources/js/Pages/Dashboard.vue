@@ -5,9 +5,9 @@ import { computed, ref } from 'vue';
 
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
-const totalInvestmentCents = computed(() => page.props.metrics?.total_investment_cents ?? 0);
-const interestEarnedCents = computed(() => page.props.metrics?.interest_earned_cents ?? 0);
-const dailyInterestCents = computed(() => page.props.metrics?.daily_interest_cents ?? 0);
+const totalInvestmentCents = computed(() => Number(page.props.metrics?.total_investment_cents ?? 0));
+const interestEarnedCents = computed(() => Number(page.props.metrics?.interest_earned_cents ?? 0));
+const dailyInterestCents = computed(() => Number(page.props.metrics?.daily_interest_cents ?? 0));
 const recentActivity = computed(() => page.props.recent_activity ?? []);
 const showBankNotice = ref(false);
 const showWithdrawModal = ref(false);
@@ -29,7 +29,7 @@ const currency = new Intl.NumberFormat('en-US', {
 });
 
 const formattedBalance = computed(() =>
-    currency.format(((user.value?.balance_cents ?? 0) / 100))
+    currency.format((Number(user.value?.balance_cents ?? 0) / 100))
 );
 
 const formattedTotalInvestment = computed(() =>
@@ -45,7 +45,7 @@ const formattedDailyInterest = computed(() =>
 );
 
 const portfolioValueCents = computed(() =>
-    (user.value?.balance_cents ?? 0) + (totalInvestmentCents.value ?? 0)
+    Number(user.value?.balance_cents ?? 0) + (totalInvestmentCents.value ?? 0)
 );
 
 const formattedPortfolioValue = computed(() =>
