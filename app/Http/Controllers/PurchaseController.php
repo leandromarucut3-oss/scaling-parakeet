@@ -40,11 +40,12 @@ class PurchaseController extends Controller
         $data = $request->validate([
             'plan_key' => ['required', 'string', 'in:'.implode(',', array_keys(self::PLANS))],
             'amount' => ['required', 'numeric', 'min:0.01'],
-            'payment_method' => ['required', 'string', 'in:account_balance'],
+            'payment_method' => ['required', 'string', 'in:account_balance,bank_transfer'],
         ]);
 
         $amountCents = (int) round($data['amount'] * 100);
         $plan = self::PLANS[$data['plan_key']];
+        $paymentMethod = $data['payment_method'];
 
         if ($amountCents <= 0) {
             throw ValidationException::withMessages([
@@ -62,20 +63,22 @@ class PurchaseController extends Controller
 
         $purchase = null;
 
-        DB::transaction(function () use ($user, $amountCents, $plan, $data, &$purchase): void {
+        DB::transaction(function () use ($user, $amountCents, $plan, $data, $paymentMethod, &$purchase): void {
             $userLocked = User::query()->whereKey($user->id)->lockForUpdate()->first();
+            $referrerId = null;
+            $commissionCents = 0;
+            $status = 'pending';
 
-            if ($userLocked->balance_cents < $amountCents) {
-                throw ValidationException::withMessages([
-                    'amount' => 'Insufficient balance.',
-                ]);
-            }
+            if ($paymentMethod === 'account_balance') {
+                if ($userLocked->balance_cents < $amountCents) {
+                    throw ValidationException::withMessages([
+                        'amount' => 'Insufficient balance.',
+                    ]);
+                }
 
-            $userLocked->balance_cents -= $amountCents;
-            $userLocked->save();
-
-                $referrerId = null;
-                $commissionCents = 0;
+                $userLocked->balance_cents -= $amountCents;
+                $userLocked->save();
+                $status = 'completed';
 
                 if ($userLocked->referrer_id && $userLocked->referrer_id !== $userLocked->id) {
                     $referrerLocked = User::query()->whereKey($userLocked->referrer_id)->lockForUpdate()->first();
@@ -88,6 +91,7 @@ class PurchaseController extends Controller
                         }
                     }
                 }
+            }
 
             $purchase = Purchase::create([
                 'user_id' => $userLocked->id,
@@ -100,13 +104,17 @@ class PurchaseController extends Controller
                 'max_amount_cents' => $plan['max_amount_cents'],
                 'amount_cents' => $amountCents,
                 'referral_commission_cents' => $commissionCents,
-                'payment_method' => 'account_balance',
-                'status' => 'completed',
+                'payment_method' => $paymentMethod,
+                'status' => $status,
             ]);
         });
 
+        $successMessage = $paymentMethod === 'bank_transfer'
+            ? 'Bank transfer submitted. We will confirm once payment is received.'
+            : 'Purchase completed successfully.';
+
         return back()->with([
-            'success' => 'Purchase completed successfully.',
+            'success' => $successMessage,
             'purchase_receipt' => $purchase ? [
                 'id' => $purchase->id,
                 'plan_name' => $purchase->plan_name,
@@ -114,6 +122,7 @@ class PurchaseController extends Controller
                 'daily_interest_bps' => $purchase->daily_interest_bps,
                 'duration_days' => $purchase->duration_days,
                 'payment_method' => $purchase->payment_method,
+                'status' => $purchase->status,
                 'created_at' => optional($purchase->created_at)->toDateTimeString(),
             ] : null,
         ]);

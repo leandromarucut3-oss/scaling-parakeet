@@ -36,6 +36,7 @@ const options = [
 const carouselRef = ref(null);
 const currentIndex = ref(0);
 const isModalOpen = ref(false);
+const bankTransferImage = '/unnamed%20(3).jpg';
 
 const page = usePage();
 const balanceCents = computed(() => page.props.auth?.user?.balance_cents ?? 0);
@@ -115,6 +116,16 @@ const closeModal = () => {
 
 const submitBalancePurchase = () => {
     form.plan_key = selectedPlan.value.key;
+    form.payment_method = 'account_balance';
+    form.post(route('shares.purchase'), {
+        preserveScroll: true,
+        onSuccess: () => form.reset('amount'),
+    });
+};
+
+const submitBankTransferPurchase = () => {
+    form.plan_key = selectedPlan.value.key;
+    form.payment_method = 'bank_transfer';
     form.post(route('shares.purchase'), {
         preserveScroll: true,
         onSuccess: () => form.reset('amount'),
@@ -123,6 +134,17 @@ const submitBalancePurchase = () => {
 
 const formatMoney = (cents) => currency.format((cents ?? 0) / 100);
 const formatRate = (bps) => ((bps ?? 0) / 100).toFixed(2);
+const formatPaymentMethod = (method) => {
+    if (method === 'account_balance') {
+        return 'Account balance';
+    }
+
+    if (method === 'bank_transfer') {
+        return 'Bank transfer';
+    }
+
+    return method ?? 'Unknown';
+};
 </script>
 
 <template>
@@ -202,7 +224,18 @@ const formatRate = (bps) => ((bps ?? 0) / 100).toFixed(2);
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-slate-500">Payment</span>
-                            <span class="font-semibold">Account balance</span>
+                            <span class="font-semibold">{{ formatPaymentMethod(receipt.payment_method) }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">Status</span>
+                            <span
+                                class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
+                                :class="receipt.status === 'pending'
+                                    ? 'bg-orange-100 text-orange-700'
+                                    : 'bg-emerald-100 text-emerald-700'"
+                            >
+                                {{ receipt.status }}
+                            </span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-slate-500">Date</span>
@@ -227,13 +260,6 @@ const formatRate = (bps) => ((bps ?? 0) / 100).toFixed(2);
                         <div>Daily interest: {{ selectedPlan.dailyRate }}% for {{ selectedPlan.durationDays }} days</div>
                     </div>
                     <div class="mt-4 space-y-3">
-                        <button
-                            type="button"
-                            class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
-                        >
-                            <span>Account balance</span>
-                            <span class="text-xs text-emerald-700">{{ formattedBalance }}</span>
-                        </button>
                         <details class="group rounded-xl border border-emerald-100">
                             <summary
                                 class="flex w-full cursor-pointer list-none items-center justify-between rounded-xl px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
@@ -264,13 +290,44 @@ const formatRate = (bps) => ((bps ?? 0) / 100).toFixed(2);
                                 Pay with balance
                             </button>
                         </details>
-                        <button
-                            type="button"
-                            class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
-                        >
-                            <span>Bank transfer</span>
-                            <span class="text-xs text-emerald-700">Select</span>
-                        </button>
+                        <details class="group rounded-xl border border-emerald-100">
+                            <summary
+                                class="flex w-full cursor-pointer list-none items-center justify-between rounded-xl px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                            >
+                                <span>Bank transfer</span>
+                                <span class="text-xs text-emerald-700 group-open:rotate-90">Select</span>
+                            </summary>
+                            <div class="border-t border-emerald-100 px-4 py-4">
+                                <img
+                                    :src="bankTransferImage"
+                                    alt="Bank transfer details"
+                                    class="mb-4 w-full rounded-lg border border-emerald-100"
+                                />
+                                <div class="text-xs text-emerald-700">
+                                    Use the details above to complete your transfer, then enter the amount you paid.
+                                </div>
+                                <input
+                                    v-model="form.amount"
+                                    type="number"
+                                    step="0.01"
+                                    :min="selectedPlan.minAmount"
+                                    :max="selectedPlan.maxAmount"
+                                    class="mt-3 w-full rounded-lg border border-emerald-100 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
+                                    placeholder="Enter amount"
+                                />
+                                <div v-if="form.errors.amount" class="mt-2 text-xs text-rose-600">
+                                    {{ form.errors.amount }}
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                class="mx-4 mb-4 w-[calc(100%-2rem)] rounded-lg bg-emerald-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-emerald-900"
+                                :disabled="form.processing"
+                                @click="submitBankTransferPurchase"
+                            >
+                                Submit transfer
+                            </button>
+                        </details>
                         <button
                             type="button"
                             class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
