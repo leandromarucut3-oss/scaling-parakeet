@@ -36,6 +36,7 @@ const options = [
 const carouselRef = ref(null);
 const currentIndex = ref(0);
 const isModalOpen = ref(false);
+const showReceiptModal = ref(false);
 const bankTransferImage = '/unnamed%20(3).jpg';
 
 const page = usePage();
@@ -114,6 +115,10 @@ const closeModal = () => {
     isModalOpen.value = false;
 };
 
+const closeReceiptModal = () => {
+    showReceiptModal.value = false;
+};
+
 const submitBalancePurchase = () => {
     form.plan_key = selectedPlan.value.key;
     form.payment_method = 'account_balance';
@@ -128,7 +133,11 @@ const submitBankTransferPurchase = () => {
     form.payment_method = 'bank_transfer';
     form.post(route('shares.purchase'), {
         preserveScroll: true,
-        onSuccess: () => form.reset('amount'),
+        onSuccess: () => {
+            form.reset('amount');
+            closeModal();
+            showReceiptModal.value = true;
+        },
     });
 };
 
@@ -350,6 +359,65 @@ const formatPaymentMethod = (method) => {
                     >
                         Close
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showReceiptModal && receipt" class="fixed inset-0 z-50">
+            <div class="absolute inset-0 bg-slate-900/50" @click="closeReceiptModal"></div>
+            <div class="relative flex min-h-screen items-center justify-center px-4">
+                <div class="w-full max-w-md rounded-2xl border border-emerald-100 bg-white p-6 text-sm text-emerald-900 shadow-2xl">
+                    <div class="flex items-center justify-between">
+                        <div class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">Receipt</div>
+                        <button
+                            type="button"
+                            class="text-xs font-semibold uppercase tracking-widest text-emerald-700"
+                            @click="closeReceiptModal"
+                        >
+                            Close
+                        </button>
+                    </div>
+                    <div class="mt-4 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">Reference</span>
+                            <span class="font-semibold">#{{ receipt.id }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">Plan</span>
+                            <span class="font-semibold">{{ receipt.plan_name }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">Amount</span>
+                            <span class="font-semibold">{{ formatMoney(receipt.amount_cents) }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">Daily interest</span>
+                            <span class="font-semibold">{{ formatRate(receipt.daily_interest_bps) }}%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">Duration</span>
+                            <span class="font-semibold">{{ receipt.duration_days }} days</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">Payment</span>
+                            <span class="font-semibold">{{ formatPaymentMethod(receipt.payment_method) }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">Status</span>
+                            <span
+                                class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
+                                :class="receipt.status === 'pending'
+                                    ? 'bg-orange-100 text-orange-700'
+                                    : 'bg-emerald-100 text-emerald-700'"
+                            >
+                                {{ receipt.status }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">Date</span>
+                            <span class="font-semibold">{{ receipt.created_at }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
