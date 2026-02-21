@@ -119,7 +119,7 @@ class HandleInertiaRequests extends Middleware
                     'created_at' => optional($purchase->created_at)->toDateTimeString(),
                 ]);
 
-            $recentActivity = $purchaseActivity
+            $recentActivity = collect($purchaseActivity)
                 ->merge($withdrawalActivity)
                 ->merge($interestActivity)
                 ->merge($referralActivity)
