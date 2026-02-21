@@ -45,6 +45,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::get('/', [UserManagementController::class, 'index'])->name('dashboard');
     Route::get('/withdrawals', [WithdrawalManagementController::class, 'index'])->name('withdrawals');
     Route::get('/deposits', [DepositManagementController::class, 'index'])->name('deposits');
+    Route::post('/deposits/{purchase}/approve', [DepositManagementController::class, 'approve'])
+        ->name('deposits.approve');
     Route::post('/users/{user}/transfer', [UserManagementController::class, 'transfer'])->name('users.transfer');
     Route::post('/withdrawals/{withdrawal}/approve', [WithdrawalManagementController::class, 'approve'])
         ->name('withdrawals.approve');

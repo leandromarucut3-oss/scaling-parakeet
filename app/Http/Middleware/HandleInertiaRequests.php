@@ -5,7 +5,6 @@ namespace App\Http\Middleware;
 use App\Models\Purchase;
 use App\Models\WithdrawalRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -133,12 +132,10 @@ class HandleInertiaRequests extends Middleware
                     ->where('status', 'pending')
                     ->count();
 
-                $pendingDeposits = 0;
-                if (Schema::hasTable('deposit_requests')) {
-                    $pendingDeposits = (int) \DB::table('deposit_requests')
-                        ->where('status', 'pending')
-                        ->count();
-                }
+                $pendingDeposits = (int) Purchase::query()
+                    ->where('payment_method', 'bank_transfer')
+                    ->where('status', 'pending')
+                    ->count();
 
                 $adminNotifications = [
                     'pending_withdrawals' => $pendingWithdrawals,
