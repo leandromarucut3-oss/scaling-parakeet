@@ -41,11 +41,13 @@ class PurchaseController extends Controller
             'plan_key' => ['required', 'string', 'in:'.implode(',', array_keys(self::PLANS))],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'payment_method' => ['required', 'string', 'in:account_balance,bank_transfer'],
+            'bank_name' => ['required_if:payment_method,bank_transfer', 'string', 'max:255'],
         ]);
 
         $amountCents = (int) round($data['amount'] * 100);
         $plan = self::PLANS[$data['plan_key']];
         $paymentMethod = $data['payment_method'];
+        $bankName = $paymentMethod === 'bank_transfer' ? $data['bank_name'] : null;
 
         if ($amountCents <= 0) {
             throw ValidationException::withMessages([
@@ -105,6 +107,7 @@ class PurchaseController extends Controller
                 'amount_cents' => $amountCents,
                 'referral_commission_cents' => $commissionCents,
                 'payment_method' => $paymentMethod,
+                'bank_name' => $bankName,
                 'status' => $status,
             ]);
         });

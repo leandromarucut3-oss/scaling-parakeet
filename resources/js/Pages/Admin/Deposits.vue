@@ -84,7 +84,7 @@ const copyAccount = async (id, accountNumber) => {
                                             {{ formatCurrency(deposit.amount_cents) }}
                                         </td>
                                         <td class="px-4 py-4">
-                                            <div class="font-semibold text-emerald-950">{{ deposit.user?.bank_name }}</div>
+                                            <div class="font-semibold text-emerald-950">{{ deposit.bank_name ?? 'Unknown bank' }}</div>
                                             <div class="text-xs text-slate-500">{{ deposit.user?.bank_account_name }}</div>
                                             <div class="mt-1 flex items-center justify-between gap-2">
                                                 <span class="font-semibold text-emerald-950">{{ deposit.user?.bank_account_number }}</span>

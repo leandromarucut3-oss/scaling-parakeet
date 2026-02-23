@@ -45,8 +45,18 @@ const copyReferralLink = async () => {
                         <div class="flex">
                             <!-- Logo -->
                             <div class="shrink-0 flex items-center gap-3">
-                                <button type="button" class="flex items-center gap-3" @click="showSidebar = true">
-                                    <ApplicationLogo class="block h-12 w-auto" />
+                                <button
+                                    type="button"
+                                    class="flex h-12 w-12 items-center justify-center rounded-full border border-emerald-700/40 bg-emerald-900/20 text-emerald-50 transition hover:bg-emerald-900/30"
+                                    @click="showSidebar = true"
+                                    aria-label="Open navigation"
+                                >
+                                    <span class="sr-only">Open navigation</span>
+                                    <span class="flex w-5 flex-col gap-1">
+                                        <span class="h-0.5 w-full rounded-full bg-emerald-50"></span>
+                                        <span class="h-0.5 w-full rounded-full bg-emerald-50"></span>
+                                        <span class="h-0.5 w-full rounded-full bg-emerald-50"></span>
+                                    </span>
                                 </button>
                             </div>
 
@@ -135,6 +145,14 @@ const copyReferralLink = async () => {
                 </button>
             </div>
             <div class="flex-1 space-y-2 px-4 py-4">
+                <Link
+                    :href="route('dashboard')"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                    @click="showSidebar = false"
+                >
+                    <span>Dashboard</span>
+                    <span class="text-xs text-emerald-700">Go</span>
+                </Link>
                 <Link
                     :href="route('profile.edit')"
                     class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"

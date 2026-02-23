@@ -37,7 +37,19 @@ const carouselRef = ref(null);
 const currentIndex = ref(0);
 const isModalOpen = ref(false);
 const showReceiptModal = ref(false);
-const bankTransferImage = '/unnamed%20(3).jpg';
+const bankOptions = [
+    {
+        key: 'landbank',
+        name: 'Landbank',
+        image: '/Landbank.png',
+    },
+    {
+        key: 'bpi',
+        name: 'BPI',
+        image: '/BPI.png',
+    },
+];
+const selectedBankKey = ref(bankOptions[0]?.key ?? 'landbank');
 
 const page = usePage();
 const balanceCents = computed(() => page.props.auth?.user?.balance_cents ?? 0);
@@ -57,6 +69,7 @@ const form = useForm({
     amount: '',
     plan_key: options[0]?.key ?? 'premier',
     payment_method: 'account_balance',
+    bank_name: bankOptions[0]?.name ?? 'Landbank',
 });
 
 const getSlides = () => {
@@ -143,6 +156,9 @@ const submitBankTransferPurchase = () => {
 
 const formatMoney = (cents) => currency.format((cents ?? 0) / 100);
 const formatRate = (bps) => ((bps ?? 0) / 100).toFixed(2);
+const selectedBank = computed(() =>
+    bankOptions.find((option) => option.key === selectedBankKey.value) ?? bankOptions[0]
+);
 const formatPaymentMethod = (method) => {
     if (method === 'account_balance') {
         return 'Account balance';
@@ -307,10 +323,30 @@ const formatPaymentMethod = (method) => {
                                 <span class="text-xs text-emerald-700 group-open:rotate-90">Select</span>
                             </summary>
                             <div class="border-t border-emerald-100 px-4 py-4">
+                                <div class="grid gap-3 sm:grid-cols-2">
+                                    <button
+                                        v-for="option in bankOptions"
+                                        :key="option.key"
+                                        type="button"
+                                        class="flex items-center gap-3 rounded-xl border px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.2em]"
+                                        :class="selectedBankKey === option.key
+                                            ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
+                                            : 'border-emerald-100 text-emerald-700 hover:bg-emerald-50'"
+                                        @click="selectedBankKey = option.key; form.bank_name = option.name"
+                                        :aria-pressed="selectedBankKey === option.key"
+                                    >
+                                        <img
+                                            :src="option.image"
+                                            :alt="`${option.name} logo`"
+                                            class="h-8 w-12 rounded-md border border-emerald-100 bg-white object-contain"
+                                        />
+                                        <span>{{ option.name }}</span>
+                                    </button>
+                                </div>
                                 <img
-                                    :src="bankTransferImage"
-                                    alt="Bank transfer details"
-                                    class="mb-4 w-full rounded-lg border border-emerald-100"
+                                    :src="selectedBank?.image"
+                                    :alt="selectedBank ? `${selectedBank.name} transfer details` : 'Bank transfer details'"
+                                    class="mb-4 mt-4 w-full rounded-lg border border-emerald-100"
                                 />
                                 <div class="text-xs text-emerald-700">
                                     Use the details above to complete your transfer, then enter the amount you paid.

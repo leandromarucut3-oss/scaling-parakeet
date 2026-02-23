@@ -30,6 +30,7 @@ class DepositManagementController extends Controller
                     'bank_account_name' => $purchase->user?->bank_account_name,
                     'bank_account_number' => $purchase->user?->bank_account_number,
                 ],
+                'bank_name' => $purchase->bank_name,
                 'plan_name' => $purchase->plan_name,
                 'amount_cents' => $purchase->amount_cents,
                 'status' => $purchase->status,

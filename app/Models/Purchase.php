@@ -25,6 +25,7 @@ class Purchase extends Model
         'accrued_days',
         'last_interest_at',
         'payment_method',
+        'bank_name',
         'status',
     ];
 
