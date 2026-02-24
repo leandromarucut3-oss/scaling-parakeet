@@ -37,6 +37,8 @@ const carouselRef = ref(null);
 const currentIndex = ref(0);
 const isModalOpen = ref(false);
 const showReceiptModal = ref(false);
+const activePaymentMode = ref(null);
+const unavailablePaymentMessage = ref('');
 const bankOptions = [
     {
         key: 'landbank',
@@ -122,10 +124,14 @@ const scrollToIndex = (index) => {
 const openModal = () => {
     isModalOpen.value = true;
     form.plan_key = selectedPlan.value.key;
+    activePaymentMode.value = null;
+    unavailablePaymentMessage.value = '';
 };
 
 const closeModal = () => {
     isModalOpen.value = false;
+    activePaymentMode.value = null;
+    unavailablePaymentMessage.value = '';
 };
 
 const closeReceiptModal = () => {
@@ -152,6 +158,15 @@ const submitBankTransferPurchase = () => {
             showReceiptModal.value = true;
         },
     });
+};
+
+const togglePaymentMode = (mode) => {
+    activePaymentMode.value = activePaymentMode.value === mode ? null : mode;
+    unavailablePaymentMessage.value = '';
+};
+
+const showUnavailablePayment = (label) => {
+    unavailablePaymentMessage.value = `${label} is not available in your region yet.`;
 };
 
 const formatMoney = (cents) => currency.format((cents ?? 0) / 100);
@@ -275,7 +290,17 @@ const formatPaymentMethod = (method) => {
             <div class="absolute inset-0 bg-slate-900/50" @click="closeModal"></div>
             <div class="relative flex min-h-screen items-center justify-center px-4">
                 <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-                    <div class="text-sm font-semibold text-emerald-900">Mode of payment</div>
+                    <div class="flex items-start justify-between">
+                        <div class="text-sm font-semibold text-emerald-900">Mode of payment</div>
+                        <button
+                            type="button"
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-100 text-emerald-800 hover:bg-emerald-50"
+                            @click="closeModal"
+                            aria-label="Close"
+                        >
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
                     <div v-if="successMessage" class="mt-3 rounded-lg bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
                         {{ successMessage }}
                     </div>
@@ -285,14 +310,21 @@ const formatPaymentMethod = (method) => {
                         <div>Daily interest: {{ selectedPlan.dailyRate }}% for {{ selectedPlan.durationDays }} days</div>
                     </div>
                     <div class="mt-4 space-y-3">
-                        <details class="group rounded-xl border border-emerald-100">
-                            <summary
-                                class="flex w-full cursor-pointer list-none items-center justify-between rounded-xl px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                        <div
+                            v-if="!activePaymentMode || activePaymentMode === 'balance'"
+                            class="rounded-xl border border-emerald-100"
+                        >
+                            <button
+                                type="button"
+                                class="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                                @click="togglePaymentMode('balance')"
                             >
                                 <span>Use balance</span>
-                                <span class="text-xs text-emerald-700 group-open:rotate-90">Select</span>
-                            </summary>
-                            <div class="border-t border-emerald-100 px-4 py-4">
+                                <span class="text-xs text-emerald-700">
+                                    {{ activePaymentMode === 'balance' ? 'Close' : 'Select' }}
+                                </span>
+                            </button>
+                            <div v-if="activePaymentMode === 'balance'" class="border-t border-emerald-100 px-4 py-4">
                                 <input
                                     v-model="form.amount"
                                     type="number"
@@ -305,24 +337,31 @@ const formatPaymentMethod = (method) => {
                                 <div v-if="form.errors.amount" class="mt-2 text-xs text-rose-600">
                                     {{ form.errors.amount }}
                                 </div>
+                                <button
+                                    type="button"
+                                    class="mt-4 w-full rounded-lg bg-emerald-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-emerald-900"
+                                    :disabled="form.processing"
+                                    @click="submitBalancePurchase"
+                                >
+                                    Pay with balance
+                                </button>
                             </div>
+                        </div>
+                        <div
+                            v-if="!activePaymentMode || activePaymentMode === 'bank_transfer'"
+                            class="rounded-xl border border-emerald-100"
+                        >
                             <button
                                 type="button"
-                                class="mx-4 mb-4 w-[calc(100%-2rem)] rounded-lg bg-emerald-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-emerald-900"
-                                :disabled="form.processing"
-                                @click="submitBalancePurchase"
-                            >
-                                Pay with balance
-                            </button>
-                        </details>
-                        <details class="group rounded-xl border border-emerald-100">
-                            <summary
-                                class="flex w-full cursor-pointer list-none items-center justify-between rounded-xl px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                                class="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                                @click="togglePaymentMode('bank_transfer')"
                             >
                                 <span>Bank transfer</span>
-                                <span class="text-xs text-emerald-700 group-open:rotate-90">Select</span>
-                            </summary>
-                            <div class="border-t border-emerald-100 px-4 py-4">
+                                <span class="text-xs text-emerald-700">
+                                    {{ activePaymentMode === 'bank_transfer' ? 'Close' : 'Select' }}
+                                </span>
+                            </button>
+                            <div v-if="activePaymentMode === 'bank_transfer'" class="border-t border-emerald-100 px-4 py-4">
                                 <div class="grid gap-3 sm:grid-cols-2">
                                     <button
                                         v-for="option in bankOptions"
@@ -363,30 +402,40 @@ const formatPaymentMethod = (method) => {
                                 <div v-if="form.errors.amount" class="mt-2 text-xs text-rose-600">
                                     {{ form.errors.amount }}
                                 </div>
+                                <button
+                                    type="button"
+                                    class="mt-4 w-full rounded-lg bg-emerald-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-emerald-900"
+                                    :disabled="form.processing"
+                                    @click="submitBankTransferPurchase"
+                                >
+                                    Submit transfer
+                                </button>
                             </div>
-                            <button
-                                type="button"
-                                class="mx-4 mb-4 w-[calc(100%-2rem)] rounded-lg bg-emerald-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-emerald-900"
-                                :disabled="form.processing"
-                                @click="submitBankTransferPurchase"
-                            >
-                                Submit transfer
-                            </button>
-                        </details>
+                        </div>
                         <button
+                            v-if="!activePaymentMode"
                             type="button"
                             class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                            @click="showUnavailablePayment('Debit or credit card')"
                         >
                             <span>Debit or credit card</span>
                             <span class="text-xs text-emerald-700">Select</span>
                         </button>
                         <button
+                            v-if="!activePaymentMode"
                             type="button"
                             class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                            @click="showUnavailablePayment('Mobile wallet')"
                         >
                             <span>Mobile wallet</span>
                             <span class="text-xs text-emerald-700">Select</span>
                         </button>
+                        <div
+                            v-if="unavailablePaymentMessage && !activePaymentMode"
+                            class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800"
+                        >
+                            {{ unavailablePaymentMessage }}
+                        </div>
                     </div>
                     <button
                         type="button"
