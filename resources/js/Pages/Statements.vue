@@ -111,6 +111,9 @@ const activeItems = computed(() => {
                                             <div v-if="activeTab === 'deposits'" class="text-xs text-slate-500">
                                                 {{ item.payment_method || 'N/A' }}
                                             </div>
+                                            <div v-if="activeTab === 'deposits' && item.remaining_days !== null" class="text-xs text-slate-500">
+                                                Remaining days: {{ item.remaining_days }}
+                                            </div>
                                         </td>
                                         <td class="px-4 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
                                             {{ item.status || 'credited' }}

@@ -24,7 +24,7 @@ class PurchaseController extends Controller
             'min_amount_cents' => 80000,
             'max_amount_cents' => 799900,
             'daily_interest_bps' => 70,
-            'duration_days' => 150,
+            'duration_days' => 120,
         ],
         'presidential' => [
             'name' => 'Presidential',

@@ -19,7 +19,7 @@ const options = [
         minAmount: 800,
         maxAmount: 7999,
         dailyRate: 0.7,
-        durationDays: 150,
+        durationDays: 120,
         image: '/SPINNEYS%20MARKETING%20TOOLS%20(18).jpg',
     },
     {
