@@ -22,7 +22,6 @@ class InviteController extends Controller
             ]) ?? collect();
 
         $referralUsername = $user?->name ?? '';
-        $referralCode = $user?->referral_code ?? '';
         $referralLink = $referralUsername
             ? route('register.referral', $referralUsername)
             : '';
@@ -30,7 +29,6 @@ class InviteController extends Controller
         return Inertia::render('Invites', [
             'referralLink' => $referralLink,
             'referralUsername' => $referralUsername,
-            'referralCode' => $referralCode,
             'referrals' => $referrals,
         ]);
     }

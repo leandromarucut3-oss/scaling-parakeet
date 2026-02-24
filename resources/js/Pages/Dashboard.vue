@@ -86,6 +86,11 @@ const submitWithdrawal = () => {
         <div class="py-10">
             <div class="max-w-7xl mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
                 <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-800 p-6 text-white shadow-lg">
+                    <img
+                        src="/logo.png"
+                        alt=""
+                        class="absolute right-6 top-6 h-20 w-28 rounded-xl bg-white/10 p-3"
+                    />
                     <div class="absolute -right-10 -top-14 h-40 w-40 rounded-full bg-white/5"></div>
                     <div class="absolute bottom-2 right-16 h-24 w-24 rounded-full bg-white/5"></div>
                     <div class="relative">

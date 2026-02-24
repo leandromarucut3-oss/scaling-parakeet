@@ -9,6 +9,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
 const showSidebar = ref(false);
+const referralShared = ref(false);
 const page = usePage();
 const isAdmin = computed(() => page.props.auth?.user?.roles?.includes('admin'));
 const adminNotifications = computed(() => page.props.admin_notifications ?? {});
@@ -26,7 +27,24 @@ const copyReferralLink = async () => {
     }
 
     try {
+        if (navigator.share) {
+            await navigator.share({
+                title: 'Join me',
+                text: 'Use my referral link to register.',
+                url: referralLink.value,
+            });
+            referralShared.value = true;
+            setTimeout(() => {
+                referralShared.value = false;
+            }, 2000);
+            return;
+        }
+
         await navigator.clipboard.writeText(referralLink.value);
+        referralShared.value = true;
+        setTimeout(() => {
+            referralShared.value = false;
+        }, 2000);
     } catch (error) {
         // ignore clipboard errors
     }
@@ -40,6 +58,16 @@ const copyReferralLink = async () => {
                 <div class="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-emerald-900/40"></div>
                 <div class="pointer-events-none absolute right-10 top-6 h-28 w-40 -rotate-12 rounded-full bg-emerald-900/45"></div>
                 <div class="pointer-events-none absolute left-1/2 top-8 h-16 w-24 -translate-x-1/2 -rotate-12 rounded-full bg-amber-400/90"></div>
+                <div class="absolute right-6 top-4 z-20 hidden sm:block">
+                    <a
+                        href="https://www.morrisons-corporate.com/About-us/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="rounded-full border border-emerald-700/40 bg-emerald-900/30 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-50 transition hover:bg-emerald-900/40"
+                    >
+                        About us
+                    </a>
+                </div>
                 <!-- Primary Navigation Menu -->
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center justify-between min-h-[6rem]">
@@ -48,16 +76,16 @@ const copyReferralLink = async () => {
                             <div class="shrink-0 flex items-center gap-3">
                                 <button
                                     type="button"
-                                    class="flex h-12 w-12 items-center justify-center rounded-full border border-emerald-700/40 bg-emerald-900/20 text-emerald-50 transition hover:bg-emerald-900/30"
+                                    class="flex items-center gap-3 rounded-full border border-emerald-700/40 bg-emerald-900/20 px-4 py-2 text-emerald-50 transition hover:bg-emerald-900/30"
                                     @click="showSidebar = true"
-                                    aria-label="Open navigation"
+                                    aria-label="Open menu"
                                 >
-                                    <span class="sr-only">Open navigation</span>
                                     <span class="flex w-5 flex-col gap-1">
                                         <span class="h-0.5 w-full rounded-full bg-emerald-50"></span>
                                         <span class="h-0.5 w-full rounded-full bg-emerald-50"></span>
                                         <span class="h-0.5 w-full rounded-full bg-emerald-50"></span>
                                     </span>
+                                    <span class="text-xs font-semibold uppercase tracking-[0.2em]">Menu</span>
                                 </button>
                             </div>
 
@@ -67,36 +95,6 @@ const copyReferralLink = async () => {
 
                         <div class="hidden sm:flex sm:items-center sm:ms-6"></div>
 
-                        <!-- Hamburger -->
-                        <div class="-me-2 flex items-center sm:hidden">
-                            <button
-                                @click="showingNavigationDropdown = !showingNavigationDropdown"
-                                class="inline-flex items-center justify-center p-2 rounded-md text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 focus:outline-none focus:bg-emerald-50 focus:text-emerald-900 transition duration-150 ease-in-out"
-                            >
-                                <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                                    <path
-                                        :class="{
-                                            hidden: showingNavigationDropdown,
-                                            'inline-flex': !showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        :class="{
-                                            hidden: !showingNavigationDropdown,
-                                            'inline-flex': showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
                     </div>
                 </div>
 
@@ -167,7 +165,7 @@ const copyReferralLink = async () => {
                     class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
                     @click="showSidebar = false"
                 >
-                    <span>Invites</span>
+                    <span>Associates</span>
                     <span class="text-xs text-emerald-700">Go</span>
                 </Link>
                 <Link
@@ -195,10 +193,6 @@ const copyReferralLink = async () => {
                             <span class="text-emerald-700">Username:</span>
                             <span class="font-semibold">{{ referralUsername || '—' }}</span>
                         </div>
-                        <div>
-                            <span class="text-emerald-700">Referral code:</span>
-                            <span class="font-semibold">{{ referralCode || '—' }}</span>
-                        </div>
                     </div>
                     <div class="mt-2 rounded-lg border border-emerald-100 bg-white px-3 py-2 text-[11px] text-emerald-900 break-all">
                         {{ referralLink || 'Referral link is not available yet.' }}
@@ -209,7 +203,7 @@ const copyReferralLink = async () => {
                         :disabled="!referralLink"
                         @click="copyReferralLink"
                     >
-                        Copy link
+                        {{ referralShared ? 'Shared' : 'Share' }}
                     </button>
                 </div>
                 <Link

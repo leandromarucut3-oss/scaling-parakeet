@@ -12,10 +12,6 @@ const props = defineProps({
         type: String,
         default: '',
     },
-    referralCode: {
-        type: String,
-        default: '',
-    },
     referrals: {
         type: Array,
         default: () => [],
@@ -24,12 +20,25 @@ const props = defineProps({
 
 const copied = ref(false);
 
-const copyLink = async () => {
+const shareLink = async () => {
     if (!props.referralLink) {
         return;
     }
 
     try {
+        if (navigator.share) {
+            await navigator.share({
+                title: 'Join me',
+                text: 'Use my referral link to register.',
+                url: props.referralLink,
+            });
+            copied.value = true;
+            setTimeout(() => {
+                copied.value = false;
+            }, 2000);
+            return;
+        }
+
         await navigator.clipboard.writeText(props.referralLink);
         copied.value = true;
         setTimeout(() => {
@@ -55,10 +64,6 @@ const copyLink = async () => {
                                 <span class="text-emerald-700">Username:</span>
                                 <span class="font-semibold">{{ referralUsername || '—' }}</span>
                             </div>
-                            <div>
-                                <span class="text-emerald-700">Referral code:</span>
-                                <span class="font-semibold">{{ referralCode || '—' }}</span>
-                            </div>
                         </div>
                         <div class="rounded-lg border border-emerald-100 bg-white px-3 py-2 text-xs text-emerald-900 break-all">
                             {{ referralLink || 'Referral link is not available yet.' }}
@@ -67,9 +72,9 @@ const copyLink = async () => {
                             type="button"
                             class="mt-3 w-full rounded-lg border border-emerald-100 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-widest text-emerald-900 hover:bg-emerald-50"
                             :disabled="!referralLink"
-                            @click="copyLink"
+                            @click="shareLink"
                         >
-                            {{ copied ? 'Copied' : 'Copy link' }}
+                            {{ copied ? 'Copied' : 'Share' }}
                         </button>
                     </div>
                 </div>
