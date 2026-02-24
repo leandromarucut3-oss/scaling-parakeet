@@ -17,7 +17,7 @@ class UserManagementController extends Controller
         $admin = $request->user();
 
         $users = User::query()
-            ->with('roles')
+            ->with(['roles', 'referrer'])
             ->orderByDesc('created_at')
             ->get()
             ->map(fn (User $user) => [
@@ -27,6 +27,11 @@ class UserManagementController extends Controller
                 'created_at' => optional($user->created_at)->toDateString(),
                 'roles' => $user->getRoleNames(),
                 'balance_cents' => $user->balance_cents,
+                'referrer' => $user->referrer ? [
+                    'id' => $user->referrer->id,
+                    'name' => $user->referrer->name,
+                    'email' => $user->referrer->email,
+                ] : null,
             ]);
 
         $withdrawals = WithdrawalRequest::query()

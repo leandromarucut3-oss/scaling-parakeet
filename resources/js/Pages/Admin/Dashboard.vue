@@ -111,6 +111,7 @@ const submitWithdrawalAction = (id, action) => {
                                         <tr>
                                             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">User</th>
                                             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Role</th>
+                                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Referrer</th>
                                             <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.2em]">Balance</th>
                                         </tr>
                                     </thead>
@@ -134,12 +135,20 @@ const submitWithdrawalAction = (id, action) => {
                                                 </span>
                                                 <span v-else class="text-slate-400">User</span>
                                             </td>
+                                            <td class="px-4 py-4">
+                                                <div class="text-sm font-semibold text-emerald-950">
+                                                    {{ user.referrer?.name || '—' }}
+                                                </div>
+                                                <div v-if="user.referrer?.email" class="text-xs text-slate-500">
+                                                    {{ user.referrer.email }}
+                                                </div>
+                                            </td>
                                             <td class="px-4 py-4 text-right font-semibold text-emerald-950">
                                                 {{ formatCurrency(user.balance_cents) }}
                                             </td>
                                         </tr>
                                         <tr v-if="!filteredUsers.length">
-                                            <td class="px-4 py-6 text-center text-sm text-slate-500" colspan="3">
+                                            <td class="px-4 py-6 text-center text-sm text-slate-500" colspan="4">
                                                 No users match this search.
                                             </td>
                                         </tr>
@@ -184,6 +193,15 @@ const submitWithdrawalAction = (id, action) => {
                                     <div class="text-xs uppercase tracking-[0.2em] text-emerald-500">Roles</div>
                                     <div class="text-sm font-semibold text-emerald-900">
                                         {{ selectedUser.roles?.length ? selectedUser.roles.join(', ') : 'User' }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-xs uppercase tracking-[0.2em] text-emerald-500">Referrer</div>
+                                    <div class="text-sm font-semibold text-emerald-900">
+                                        {{ selectedUser.referrer?.name || '—' }}
+                                    </div>
+                                    <div v-if="selectedUser.referrer?.email" class="text-xs text-slate-500">
+                                        {{ selectedUser.referrer.email }}
                                     </div>
                                 </div>
                             </div>

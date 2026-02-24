@@ -177,17 +177,22 @@ const copyReferralLink = async () => {
                     <span>Withdrawal</span>
                     <span class="text-xs text-emerald-700">Go</span>
                 </Link>
-                <button
-                    type="button"
-                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
-                    :disabled="!referralLink"
-                    @click="copyReferralLink"
-                >
-                    <span>Referral link</span>
-                    <span class="text-xs text-emerald-700">Copy</span>
-                </button>
             </div>
-            <div class="border-t border-emerald-100 px-4 py-4">
+            <div class="border-t border-emerald-100 px-4 py-4 space-y-3">
+                <div class="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3">
+                    <div class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Referral link</div>
+                    <div class="mt-2 rounded-lg border border-emerald-100 bg-white px-3 py-2 text-[11px] text-emerald-900 break-all">
+                        {{ referralLink || 'Referral link is not available yet.' }}
+                    </div>
+                    <button
+                        type="button"
+                        class="mt-3 w-full rounded-lg border border-emerald-100 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-widest text-emerald-900 hover:bg-emerald-50"
+                        :disabled="!referralLink"
+                        @click="copyReferralLink"
+                    >
+                        Copy link
+                    </button>
+                </div>
                 <Link
                     :href="route('logout')"
                     method="post"
