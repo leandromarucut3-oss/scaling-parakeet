@@ -65,7 +65,7 @@ class PurchaseController extends Controller
 
         $purchase = null;
 
-        DB::transaction(function () use ($user, $amountCents, $plan, $data, $paymentMethod, &$purchase): void {
+        DB::transaction(function () use ($user, $amountCents, $plan, $data, $paymentMethod, $bankName, &$purchase): void {
             $userLocked = User::query()->whereKey($user->id)->lockForUpdate()->first();
             $referrerId = null;
             $commissionCents = 0;

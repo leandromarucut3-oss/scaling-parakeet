@@ -110,14 +110,18 @@ const updateIndex = () => {
 const scrollToIndex = (index) => {
     const slides = getSlides();
     const target = slides[index];
-    if (!target) {
+    if (!target || !carouselRef.value) {
         return;
     }
 
-    target.scrollIntoView({
+    currentIndex.value = index;
+
+    const container = carouselRef.value;
+    const left = target.offsetLeft - (container.clientWidth - target.clientWidth) / 2;
+
+    container.scrollTo({
+        left: Math.max(0, left),
         behavior: 'smooth',
-        inline: 'center',
-        block: 'nearest',
     });
 };
 
@@ -197,7 +201,7 @@ const formatPaymentMethod = (method) => {
                 <div class="relative">
                     <div
                         ref="carouselRef"
-                        class="flex snap-x snap-mandatory gap-6 overflow-x-scroll pb-4 touch-pan-x overscroll-x-contain [&::-webkit-scrollbar]:hidden"
+                        class="relative z-0 flex snap-x snap-mandatory gap-6 overflow-x-scroll pb-4 touch-pan-x overscroll-x-contain [&::-webkit-scrollbar]:hidden"
                         style="scrollbar-width: none; -webkit-overflow-scrolling: touch; touch-action: pan-x;"
                         @scroll.passive="updateIndex"
                     >
@@ -223,18 +227,22 @@ const formatPaymentMethod = (method) => {
                         </div>
                     </div>
                 </div>
-                <div class="flex items-center justify-center gap-2">
-                    <span
+                <div class="relative z-30 mt-4 flex items-center justify-center gap-2 pointer-events-auto">
+                    <button
                         v-for="(option, index) in options"
                         :key="`dot-${index}`"
-                        class="h-2 w-2 rounded-full transition"
+                        type="button"
+                        class="flex h-6 w-6 items-center justify-center rounded-full"
                         :class="index === currentIndex ? 'bg-emerald-700' : 'bg-emerald-200'"
-                        role="button"
-                        tabindex="0"
-                        @click="scrollToIndex(index)"
-                        @keydown.enter.prevent="scrollToIndex(index)"
-                        @keydown.space.prevent="scrollToIndex(index)"
-                    ></span>
+                        :aria-label="`Go to ${option.name}`"
+                        @pointerdown.stop
+                        @click.stop.prevent="scrollToIndex(index)"
+                    >
+                        <span
+                            class="h-3 w-3 rounded-full transition"
+                            :class="index === currentIndex ? 'bg-emerald-700' : 'bg-emerald-200'"
+                        ></span>
+                    </button>
                 </div>
                 <div
                     v-if="receipt"

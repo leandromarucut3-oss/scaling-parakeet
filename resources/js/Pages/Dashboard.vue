@@ -113,12 +113,12 @@ const submitWithdrawal = () => {
                             >
                                 Withdraw
                             </button>
-                            <button
+                            <Link
+                                :href="route('statements')"
                                 class="inline-flex items-center rounded-md border border-white/30 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-white/10"
-                                type="button"
                             >
                                 Statements
-                            </button>
+                            </Link>
                         </div>
                         <div v-if="showBankNotice && !hasBankDetails" class="mt-4 rounded-lg bg-white/10 px-4 py-3 text-xs text-white">
                             Add your bank details before requesting a withdrawal.

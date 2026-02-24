@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\WithdrawalManagementController;
 use App\Http\Controllers\Admin\DepositManagementController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\WithdrawalController;
+use App\Http\Controllers\InviteController;
+use App\Http\Controllers\StatementController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -58,6 +60,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/invites', [InviteController::class, 'index'])->name('invites');
+    Route::get('/statements', [StatementController::class, 'index'])->name('statements');
     Route::post('/buy-shares', [PurchaseController::class, 'store'])->name('shares.purchase');
     Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
 });

@@ -10,6 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -74,5 +75,10 @@ class User extends Authenticatable
     public function referrer(): BelongsTo
     {
         return $this->belongsTo(self::class, 'referrer_id');
+    }
+
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(self::class, 'referrer_id');
     }
 }

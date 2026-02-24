@@ -15,6 +15,7 @@ const adminNotifications = computed(() => page.props.admin_notifications ?? {});
 const pendingWithdrawals = computed(() => adminNotifications.value.pending_withdrawals ?? 0);
 const pendingDeposits = computed(() => adminNotifications.value.pending_deposits ?? 0);
 const referralUsername = computed(() => page.props.auth?.user?.name ?? '');
+const referralCode = computed(() => page.props.auth?.user?.referral_code ?? '');
 const referralLink = computed(() =>
     referralUsername.value ? route('register.referral', referralUsername.value) : ''
 );
@@ -162,6 +163,14 @@ const copyReferralLink = async () => {
                     <span class="text-xs text-emerald-700">Go</span>
                 </Link>
                 <Link
+                    :href="route('invites')"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                    @click="showSidebar = false"
+                >
+                    <span>Invites</span>
+                    <span class="text-xs text-emerald-700">Go</span>
+                </Link>
+                <Link
                     :href="isAdmin ? route('admin.deposits') : route('shares.buy')"
                     class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
                     @click="showSidebar = false"
@@ -181,6 +190,16 @@ const copyReferralLink = async () => {
             <div class="border-t border-emerald-100 px-4 py-4 space-y-3">
                 <div class="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3">
                     <div class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Referral link</div>
+                    <div class="mt-2 grid gap-1 text-[11px] text-emerald-900">
+                        <div>
+                            <span class="text-emerald-700">Username:</span>
+                            <span class="font-semibold">{{ referralUsername || '—' }}</span>
+                        </div>
+                        <div>
+                            <span class="text-emerald-700">Referral code:</span>
+                            <span class="font-semibold">{{ referralCode || '—' }}</span>
+                        </div>
+                    </div>
                     <div class="mt-2 rounded-lg border border-emerald-100 bg-white px-3 py-2 text-[11px] text-emerald-900 break-all">
                         {{ referralLink || 'Referral link is not available yet.' }}
                     </div>
