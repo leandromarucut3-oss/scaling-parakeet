@@ -9,6 +9,7 @@
         <meta property="og:title" content="{{ config('app.name', 'Laravel') }}">
         <meta property="og:url" content="{{ url()->current() }}">
         <meta name="twitter:title" content="{{ config('app.name', 'Laravel') }}">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
