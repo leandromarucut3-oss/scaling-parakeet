@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Purchase;
 use App\Models\User;
 use App\Models\WithdrawalRequest;
 use Illuminate\Http\Request;
@@ -95,5 +96,48 @@ class UserManagementController extends Controller
         });
 
         return back();
+    }
+
+    public function grantPackage(Request $request, User $user)
+    {
+        $plans = config('investment_plans', []);
+
+        $data = $request->validate([
+            'plan_key' => ['required', 'string', 'in:'.implode(',', array_keys($plans))],
+            'amount' => ['required', 'numeric', 'min:0.01'],
+        ]);
+
+        $plan = $plans[$data['plan_key']];
+        $amountCents = (int) round($data['amount'] * 100);
+
+        if ($amountCents <= 0) {
+            throw ValidationException::withMessages([
+                'amount' => 'Amount must be at least 0.01.',
+            ]);
+        }
+
+        if ($amountCents < $plan['min_amount_cents'] || $amountCents > $plan['max_amount_cents']) {
+            throw ValidationException::withMessages([
+                'amount' => 'Amount must be within the selected plan range.',
+            ]);
+        }
+
+        Purchase::create([
+            'user_id' => $user->id,
+            'referrer_id' => null,
+            'plan_key' => $data['plan_key'],
+            'plan_name' => $plan['name'],
+            'daily_interest_bps' => $plan['daily_interest_bps'],
+            'duration_days' => $plan['duration_days'],
+            'min_amount_cents' => $plan['min_amount_cents'],
+            'max_amount_cents' => $plan['max_amount_cents'],
+            'amount_cents' => $amountCents,
+            'referral_commission_cents' => 0,
+            'payment_method' => 'admin_grant',
+            'bank_name' => null,
+            'status' => 'completed',
+        ]);
+
+        return back()->with('success', 'Package sent successfully.');
     }
 }

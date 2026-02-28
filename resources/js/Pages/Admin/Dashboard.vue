@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -22,10 +22,42 @@ const props = defineProps({
     },
 });
 
+const packageOptions = [
+    {
+        key: 'premier',
+        name: 'Premier',
+        minAmount: 150,
+        maxAmount: 799,
+        dailyRate: 0.5,
+        durationDays: 150,
+    },
+    {
+        key: 'deluxe',
+        name: 'Deluxe',
+        minAmount: 800,
+        maxAmount: 7999,
+        dailyRate: 0.7,
+        durationDays: 120,
+    },
+    {
+        key: 'presidential',
+        name: 'Presidential',
+        minAmount: 8000,
+        maxAmount: 1000000,
+        dailyRate: 0.9,
+        durationDays: 90,
+    },
+];
+
 const search = ref('');
 const selectedUserId = ref(props.users[0]?.id ?? null);
 const form = useForm({
     amount: '',
+});
+
+const packageForm = useForm({
+    plan_key: packageOptions[0]?.key ?? 'premier',
+    amount: packageOptions[0]?.minAmount ?? 150,
 });
 
 const withdrawalAction = useForm({});
@@ -58,6 +90,19 @@ const selectedUser = computed(() =>
 
 const formatCurrency = (cents) => currency.format((cents ?? 0) / 100);
 
+const selectedPlan = computed(() =>
+    packageOptions.find((option) => option.key === packageForm.plan_key) ?? packageOptions[0]
+);
+
+watch(
+    () => packageForm.plan_key,
+    () => {
+        if (selectedPlan.value) {
+            packageForm.amount = selectedPlan.value.minAmount;
+        }
+    }
+);
+
 const submitTransfer = () => {
     if (!selectedUser.value) {
         return;
@@ -66,6 +111,17 @@ const submitTransfer = () => {
     form.post(route('admin.users.transfer', selectedUser.value.id), {
         preserveScroll: true,
         onSuccess: () => form.reset('amount'),
+    });
+};
+
+const submitPackageGrant = () => {
+    if (!selectedUser.value) {
+        return;
+    }
+
+    packageForm.post(route('admin.users.grant-package', selectedUser.value.id), {
+        preserveScroll: true,
+        onSuccess: () => packageForm.reset('amount'),
     });
 };
 
@@ -233,6 +289,59 @@ const submitWithdrawalAction = (id, action) => {
                                 </PrimaryButton>
                                 <div v-if="form.recentlySuccessful" class="text-xs text-emerald-600">
                                     Funds sent successfully.
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="rounded-2xl bg-white/95 p-6 shadow-lg ring-1 ring-emerald-100">
+                            <div class="text-sm font-semibold text-emerald-800">Send package</div>
+                            <form class="mt-4 space-y-4" @submit.prevent="submitPackageGrant">
+                                <div>
+                                    <InputLabel for="plan_key" value="Package" />
+                                    <select
+                                        id="plan_key"
+                                        v-model="packageForm.plan_key"
+                                        class="mt-1 block w-full rounded-md border border-emerald-100 bg-white px-3 py-2 text-sm text-emerald-900 focus:border-emerald-500 focus:ring-emerald-500"
+                                        :disabled="!selectedUser"
+                                    >
+                                        <option
+                                            v-for="option in packageOptions"
+                                            :key="option.key"
+                                            :value="option.key"
+                                        >
+                                            {{ option.name }}
+                                        </option>
+                                    </select>
+                                    <InputError class="mt-2" :message="packageForm.errors.plan_key" />
+                                </div>
+                                <div class="rounded-lg border border-emerald-100 bg-emerald-50/60 px-3 py-2 text-xs text-emerald-800">
+                                    <div class="font-semibold">{{ selectedPlan.name }} details</div>
+                                    <div>Range: {{ formatCurrency(selectedPlan.minAmount * 100) }} - {{ formatCurrency(selectedPlan.maxAmount * 100) }}</div>
+                                    <div>Daily interest: {{ selectedPlan.dailyRate }}% for {{ selectedPlan.durationDays }} days</div>
+                                </div>
+                                <div>
+                                    <InputLabel for="package_amount" value="Amount (USD)" />
+                                    <TextInput
+                                        id="package_amount"
+                                        v-model="packageForm.amount"
+                                        class="mt-1 block w-full"
+                                        type="number"
+                                        step="0.01"
+                                        :min="selectedPlan.minAmount"
+                                        :max="selectedPlan.maxAmount"
+                                        :disabled="!selectedUser"
+                                    />
+                                    <InputError class="mt-2" :message="packageForm.errors.amount" />
+                                </div>
+                                <PrimaryButton
+                                    type="submit"
+                                    :disabled="packageForm.processing || !selectedUser"
+                                    class="w-full justify-center"
+                                >
+                                    Send {{ selectedPlan.name }} to {{ selectedUser ? selectedUser.name : 'user' }}
+                                </PrimaryButton>
+                                <div v-if="packageForm.recentlySuccessful" class="text-xs text-emerald-600">
+                                    Package sent successfully.
                                 </div>
                             </form>
                         </div>

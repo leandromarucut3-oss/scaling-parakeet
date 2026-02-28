@@ -11,41 +11,20 @@ use Illuminate\Validation\ValidationException;
 
 class PurchaseController extends Controller
 {
-    private const PLANS = [
-        'premier' => [
-            'name' => 'Premier',
-            'min_amount_cents' => 15000,
-            'max_amount_cents' => 79900,
-            'daily_interest_bps' => 50,
-            'duration_days' => 150,
-        ],
-        'deluxe' => [
-            'name' => 'Deluxe',
-            'min_amount_cents' => 80000,
-            'max_amount_cents' => 799900,
-            'daily_interest_bps' => 70,
-            'duration_days' => 120,
-        ],
-        'presidential' => [
-            'name' => 'Presidential',
-            'min_amount_cents' => 800000,
-            'max_amount_cents' => 100000000,
-            'daily_interest_bps' => 90,
-            'duration_days' => 90,
-        ],
-    ];
 
     public function store(Request $request): RedirectResponse
     {
+        $plans = config('investment_plans', []);
+
         $data = $request->validate([
-            'plan_key' => ['required', 'string', 'in:'.implode(',', array_keys(self::PLANS))],
+            'plan_key' => ['required', 'string', 'in:'.implode(',', array_keys($plans))],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'payment_method' => ['required', 'string', 'in:account_balance,bank_transfer'],
             'bank_name' => ['required_if:payment_method,bank_transfer', 'string', 'max:255'],
         ]);
 
         $amountCents = (int) round($data['amount'] * 100);
-        $plan = self::PLANS[$data['plan_key']];
+        $plan = $plans[$data['plan_key']];
         $paymentMethod = $data['payment_method'];
         $bankName = $paymentMethod === 'bank_transfer' ? $data['bank_name'] : null;
 
