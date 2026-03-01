@@ -5,6 +5,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const props = defineProps({
     email: {
@@ -23,6 +24,9 @@ const form = useForm({
     password: '',
     password_confirmation: '',
 });
+
+const showPassword = ref(false);
+const showPasswordConfirmation = ref(false);
 
 const submit = () => {
     form.post(route('password.store'), {
@@ -60,14 +64,24 @@ const submit = () => {
             <div>
                 <InputLabel for="password" value="Password" class="text-slate-700" />
 
-                <TextInput
-                    id="password"
-                    type="password"
-                    class="mt-2 block w-full rounded-md border-slate-200 bg-slate-50/70 focus:border-emerald-500 focus:ring-emerald-500"
-                    v-model="form.password"
-                    required
-                    autocomplete="new-password"
-                />
+                <div class="relative mt-2">
+                    <TextInput
+                        id="password"
+                        :type="showPassword ? 'text' : 'password'"
+                        class="block w-full rounded-md border-slate-200 bg-slate-50/70 pr-20 focus:border-emerald-500 focus:ring-emerald-500"
+                        v-model="form.password"
+                        required
+                        autocomplete="new-password"
+                    />
+                    <button
+                        type="button"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold uppercase tracking-widest text-emerald-700"
+                        @click="showPassword = !showPassword"
+                        :aria-pressed="showPassword"
+                    >
+                        {{ showPassword ? 'Hide' : 'Show' }}
+                    </button>
+                </div>
 
                 <InputError class="mt-2" :message="form.errors.password" />
             </div>
@@ -75,14 +89,24 @@ const submit = () => {
             <div>
                 <InputLabel for="password_confirmation" value="Confirm Password" class="text-slate-700" />
 
-                <TextInput
-                    id="password_confirmation"
-                    type="password"
-                    class="mt-2 block w-full rounded-md border-slate-200 bg-slate-50/70 focus:border-emerald-500 focus:ring-emerald-500"
-                    v-model="form.password_confirmation"
-                    required
-                    autocomplete="new-password"
-                />
+                <div class="relative mt-2">
+                    <TextInput
+                        id="password_confirmation"
+                        :type="showPasswordConfirmation ? 'text' : 'password'"
+                        class="block w-full rounded-md border-slate-200 bg-slate-50/70 pr-20 focus:border-emerald-500 focus:ring-emerald-500"
+                        v-model="form.password_confirmation"
+                        required
+                        autocomplete="new-password"
+                    />
+                    <button
+                        type="button"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold uppercase tracking-widest text-emerald-700"
+                        @click="showPasswordConfirmation = !showPasswordConfirmation"
+                        :aria-pressed="showPasswordConfirmation"
+                    >
+                        {{ showPasswordConfirmation ? 'Hide' : 'Show' }}
+                    </button>
+                </div>
 
                 <InputError class="mt-2" :message="form.errors.password_confirmation" />
             </div>

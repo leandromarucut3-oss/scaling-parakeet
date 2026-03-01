@@ -11,7 +11,11 @@ import { Link } from '@inertiajs/vue3';
 
         <div class="relative flex min-h-screen flex-col items-center justify-center px-4 py-10">
             <Link href="/" class="mb-6 flex items-center gap-3">
-                <ApplicationLogo class="h-10 w-auto" />
+                <img
+                    src="/CVS.png"
+                    alt="Morrisons"
+                    class="h-12 w-auto"
+                />
             </Link>
 
             <div class="w-full max-w-xl rounded-2xl bg-white/95 p-10 shadow-xl ring-1 ring-slate-900/5">

@@ -6,6 +6,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 defineProps({
     canResetPassword: {
@@ -21,6 +22,8 @@ const form = useForm({
     password: '',
     remember: false,
 });
+
+const showPassword = ref(false);
 
 const submit = () => {
     form.post(route('login'), {
@@ -63,14 +66,24 @@ const submit = () => {
             <div>
                 <InputLabel for="password" value="Password" class="text-slate-700" />
 
-                <TextInput
-                    id="password"
-                    type="password"
-                    class="mt-2 block w-full rounded-md border-slate-200 bg-slate-50/70 focus:border-emerald-500 focus:ring-emerald-500"
-                    v-model="form.password"
-                    required
-                    autocomplete="current-password"
-                />
+                <div class="relative mt-2">
+                    <TextInput
+                        id="password"
+                        :type="showPassword ? 'text' : 'password'"
+                        class="block w-full rounded-md border-slate-200 bg-slate-50/70 pr-20 focus:border-emerald-500 focus:ring-emerald-500"
+                        v-model="form.password"
+                        required
+                        autocomplete="current-password"
+                    />
+                    <button
+                        type="button"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold uppercase tracking-widest text-emerald-700"
+                        @click="showPassword = !showPassword"
+                        :aria-pressed="showPassword"
+                    >
+                        {{ showPassword ? 'Hide' : 'Show' }}
+                    </button>
+                </div>
 
                 <InputError class="mt-2" :message="form.errors.password" />
             </div>
