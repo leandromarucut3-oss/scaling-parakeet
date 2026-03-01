@@ -20,6 +20,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    recentTransactions: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const packageOptions = [
@@ -69,18 +73,23 @@ const currency = new Intl.NumberFormat('en-US', {
 });
 
 const filteredUsers = computed(() => {
-    if (!search.value) {
-        return props.users;
-    }
+    const base = search.value
+        ? props.users.filter((user) => {
+            const needle = search.value.toLowerCase();
 
-    const needle = search.value.toLowerCase();
+            return (
+                user.name?.toLowerCase().includes(needle) ||
+                user.email?.toLowerCase().includes(needle) ||
+                String(user.id).includes(needle)
+            );
+        })
+        : props.users;
 
-    return props.users.filter((user) => {
-        return (
-            user.name?.toLowerCase().includes(needle) ||
-            user.email?.toLowerCase().includes(needle) ||
-            String(user.id).includes(needle)
-        );
+    return [...base].sort((a, b) => {
+        const aDate = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const bDate = b.created_at ? new Date(b.created_at).getTime() : 0;
+
+        return bDate - aDate;
     });
 });
 
@@ -144,72 +153,128 @@ const submitWithdrawalAction = (id, action) => {
         <div class="py-10">
             <div class="max-w-7xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
                 <div class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-                    <div class="rounded-2xl bg-white/95 p-6 shadow-lg ring-1 ring-emerald-100">
-                        <div class="flex flex-wrap items-center justify-between gap-3">
-                            <div>
-                                <div class="text-sm font-semibold text-emerald-800">Users</div>
-                                <div class="text-xs text-slate-500">{{ filteredUsers.length }} accounts</div>
+                    <div class="space-y-6">
+                        <div class="rounded-2xl bg-white/95 p-6 shadow-lg ring-1 ring-emerald-100">
+                            <div class="flex flex-wrap items-center justify-between gap-3">
+                                <div>
+                                    <div class="text-sm font-semibold text-emerald-800">Users</div>
+                                    <div class="text-xs text-slate-500">{{ filteredUsers.length }} accounts</div>
+                                </div>
+                                <div class="w-full sm:w-64">
+                                    <TextInput
+                                        v-model="search"
+                                        class="w-full"
+                                        type="text"
+                                        placeholder="Search name, email, ID"
+                                    />
+                                </div>
                             </div>
-                            <div class="w-full sm:w-64">
-                                <TextInput
-                                    v-model="search"
-                                    class="w-full"
-                                    type="text"
-                                    placeholder="Search name, email, ID"
-                                />
+
+                            <div class="mt-4 overflow-hidden rounded-2xl border border-emerald-100">
+                                <div class="max-h-[420px] overflow-y-auto">
+                                    <table class="w-full border-collapse text-sm">
+                                        <thead class="bg-emerald-50/80 text-emerald-900">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">User</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Role</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Referrer</th>
+                                                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.2em]">Balance</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr
+                                                v-for="user in filteredUsers"
+                                                :key="user.id"
+                                                class="cursor-pointer border-t border-emerald-100/60 transition hover:bg-emerald-50/70"
+                                                :class="{
+                                                    'bg-emerald-100/60': user.id === selectedUserId,
+                                                }"
+                                                @click="selectedUserId = user.id"
+                                            >
+                                                <td class="px-4 py-4">
+                                                    <div class="font-semibold text-emerald-950">{{ user.name }}</div>
+                                                    <div class="text-xs text-slate-500">{{ user.email }}</div>
+                                                </td>
+                                                <td class="px-4 py-4 text-xs text-emerald-800">
+                                                    <span v-if="user.roles?.length" class="rounded-full bg-emerald-100 px-3 py-1">
+                                                        {{ user.roles.join(', ') }}
+                                                    </span>
+                                                    <span v-else class="text-slate-400">User</span>
+                                                </td>
+                                                <td class="px-4 py-4">
+                                                    <div class="text-sm font-semibold text-emerald-950">
+                                                        {{ user.referrer?.name || '—' }}
+                                                    </div>
+                                                    <div v-if="user.referrer?.email" class="text-xs text-slate-500">
+                                                        {{ user.referrer.email }}
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-4 text-right font-semibold text-emerald-950">
+                                                    {{ formatCurrency(user.balance_cents) }}
+                                                </td>
+                                            </tr>
+                                            <tr v-if="!filteredUsers.length">
+                                                <td class="px-4 py-6 text-center text-sm text-slate-500" colspan="4">
+                                                    No users match this search.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="mt-4 overflow-hidden rounded-2xl border border-emerald-100">
-                            <div class="max-h-[420px] overflow-y-auto">
-                                <table class="w-full border-collapse text-sm">
-                                    <thead class="bg-emerald-50/80 text-emerald-900">
-                                        <tr>
-                                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">User</th>
-                                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Role</th>
-                                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Referrer</th>
-                                            <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.2em]">Balance</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr
-                                            v-for="user in filteredUsers"
-                                            :key="user.id"
-                                            class="cursor-pointer border-t border-emerald-100/60 transition hover:bg-emerald-50/70"
-                                            :class="{
-                                                'bg-emerald-100/60': user.id === selectedUserId,
-                                            }"
-                                            @click="selectedUserId = user.id"
-                                        >
-                                            <td class="px-4 py-4">
-                                                <div class="font-semibold text-emerald-950">{{ user.name }}</div>
-                                                <div class="text-xs text-slate-500">{{ user.email }}</div>
-                                            </td>
-                                            <td class="px-4 py-4 text-xs text-emerald-800">
-                                                <span v-if="user.roles?.length" class="rounded-full bg-emerald-100 px-3 py-1">
-                                                    {{ user.roles.join(', ') }}
-                                                </span>
-                                                <span v-else class="text-slate-400">User</span>
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <div class="text-sm font-semibold text-emerald-950">
-                                                    {{ user.referrer?.name || '—' }}
-                                                </div>
-                                                <div v-if="user.referrer?.email" class="text-xs text-slate-500">
-                                                    {{ user.referrer.email }}
-                                                </div>
-                                            </td>
-                                            <td class="px-4 py-4 text-right font-semibold text-emerald-950">
-                                                {{ formatCurrency(user.balance_cents) }}
-                                            </td>
-                                        </tr>
-                                        <tr v-if="!filteredUsers.length">
-                                            <td class="px-4 py-6 text-center text-sm text-slate-500" colspan="4">
-                                                No users match this search.
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                        <div class="rounded-2xl bg-white/95 p-6 shadow-lg ring-1 ring-emerald-100">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-sm font-semibold text-emerald-800">Recent transactions</div>
+                                    <div class="text-xs text-slate-500">Latest activity across the system</div>
+                                </div>
+                            </div>
+                            <div class="mt-4 overflow-hidden rounded-2xl border border-emerald-100">
+                                <div class="max-h-[360px] overflow-y-auto">
+                                    <table class="w-full border-collapse text-sm">
+                                        <thead class="bg-emerald-50/80 text-emerald-900">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">User</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Type</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Status</th>
+                                                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.2em]">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr
+                                                v-for="transaction in props.recentTransactions"
+                                                :key="`${transaction.type}-${transaction.id}`"
+                                                class="border-t border-emerald-100/60"
+                                            >
+                                                <td class="px-4 py-4">
+                                                    <div class="font-semibold text-emerald-950">
+                                                        {{ transaction.user?.name || '—' }}
+                                                    </div>
+                                                    <div class="text-xs text-slate-500">{{ transaction.user?.email || '' }}</div>
+                                                </td>
+                                                <td class="px-4 py-4">
+                                                    <div class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                                                        {{ transaction.type === 'purchase' ? 'Package' : 'Withdrawal' }}
+                                                    </div>
+                                                    <div class="text-xs text-slate-500">{{ transaction.description }}</div>
+                                                </td>
+                                                <td class="px-4 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                                                    {{ transaction.status }}
+                                                </td>
+                                                <td class="px-4 py-4 text-right font-semibold text-emerald-950">
+                                                    {{ formatCurrency(transaction.amount_cents) }}
+                                                </td>
+                                            </tr>
+                                            <tr v-if="!props.recentTransactions.length">
+                                                <td class="px-4 py-6 text-center text-sm text-slate-500" colspan="4">
+                                                    No recent transactions yet.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>

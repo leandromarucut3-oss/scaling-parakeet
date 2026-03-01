@@ -55,10 +55,41 @@ class UserManagementController extends Controller
                 'created_at' => optional($withdrawal->created_at)->toDateTimeString(),
             ]);
 
+        $purchases = Purchase::query()
+            ->with('user')
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get()
+            ->map(fn (Purchase $purchase) => [
+                'id' => $purchase->id,
+                'user' => [
+                    'id' => $purchase->user?->id,
+                    'name' => $purchase->user?->name,
+                    'email' => $purchase->user?->email,
+                ],
+                'amount_cents' => $purchase->amount_cents,
+                'status' => $purchase->status,
+                'created_at' => optional($purchase->created_at)->toDateTimeString(),
+                'type' => 'purchase',
+                'description' => $purchase->plan_name ? "Package: {$purchase->plan_name}" : 'Package purchase',
+            ]);
+
+        $recentTransactions = $purchases
+            ->concat($withdrawals->map(function (array $withdrawal) {
+                return array_merge($withdrawal, [
+                    'type' => 'withdrawal',
+                    'description' => 'Withdrawal request',
+                ]);
+            }))
+            ->sortByDesc('created_at')
+            ->values()
+            ->take(30);
+
         return Inertia::render('Admin/Dashboard', [
             'users' => $users,
             'adminBalanceCents' => $admin?->balance_cents ?? 0,
             'withdrawals' => $withdrawals,
+            'recentTransactions' => $recentTransactions,
         ]);
     }
 
