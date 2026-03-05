@@ -26,6 +26,7 @@ class UserManagementController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'created_at' => optional($user->created_at)->toDateString(),
+                'is_new' => $user->created_at && $user->created_at->greaterThan(now()->subDay()),
                 'roles' => $user->getRoleNames(),
                 'balance_cents' => $user->balance_cents,
                 'referrer' => $user->referrer ? [
@@ -72,6 +73,7 @@ class UserManagementController extends Controller
                 'created_at' => optional($purchase->created_at)->toDateTimeString(),
                 'type' => 'purchase',
                 'description' => $purchase->plan_name ? "Package: {$purchase->plan_name}" : 'Package purchase',
+                'is_new' => $purchase->status === 'pending',
             ]);
 
         $recentTransactions = $purchases
@@ -79,6 +81,7 @@ class UserManagementController extends Controller
                 return array_merge($withdrawal, [
                     'type' => 'withdrawal',
                     'description' => 'Withdrawal request',
+                    'is_new' => false,
                 ]);
             }))
             ->sortByDesc('created_at')

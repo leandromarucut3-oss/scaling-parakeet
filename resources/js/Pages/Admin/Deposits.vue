@@ -19,7 +19,28 @@ const currency = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 2,
 });
 
+const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+});
+
 const formatCurrency = (cents) => currency.format((cents ?? 0) / 100);
+
+const formatDateTime = (value) => {
+    if (!value) {
+        return '—';
+    }
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+        return value;
+    }
+
+    return dateTimeFormatter.format(parsed);
+};
 
 const submitDepositApproval = (id) => {
     depositAction.post(route('admin.deposits.approve', id), {
@@ -64,6 +85,7 @@ const copyAccount = async (id, accountNumber) => {
                                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Amount</th>
                                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Bank</th>
                                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Status</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Date</th>
                                         <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.2em]">Actions</th>
                                     </tr>
                                 </thead>
@@ -98,7 +120,18 @@ const copyAccount = async (id, accountNumber) => {
                                             </div>
                                         </td>
                                         <td class="px-4 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
-                                            {{ deposit.status }}
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <span>{{ deposit.status }}</span>
+                                                <span
+                                                    v-if="deposit.is_new"
+                                                    class="rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-700"
+                                                >
+                                                    New deposit
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-4 text-xs text-slate-500">
+                                            {{ formatDateTime(deposit.created_at) }}
                                         </td>
                                         <td class="px-4 py-4 text-right">
                                             <button
@@ -112,7 +145,7 @@ const copyAccount = async (id, accountNumber) => {
                                         </td>
                                     </tr>
                                     <tr v-if="!props.deposits.length">
-                                        <td class="px-4 py-6 text-center text-sm text-slate-500" colspan="6">
+                                        <td class="px-4 py-6 text-center text-sm text-slate-500" colspan="7">
                                             No deposits yet.
                                         </td>
                                     </tr>

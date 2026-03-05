@@ -72,6 +72,20 @@ const currency = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 2,
 });
 
+const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+});
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+});
+
 const filteredUsers = computed(() => {
     const base = search.value
         ? props.users.filter((user) => {
@@ -98,6 +112,32 @@ const selectedUser = computed(() =>
 );
 
 const formatCurrency = (cents) => currency.format((cents ?? 0) / 100);
+
+const formatDateTime = (value) => {
+    if (!value) {
+        return '—';
+    }
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+        return value;
+    }
+
+    return dateTimeFormatter.format(parsed);
+};
+
+const formatDate = (value) => {
+    if (!value) {
+        return '—';
+    }
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+        return value;
+    }
+
+    return dateFormatter.format(parsed);
+};
 
 const selectedPlan = computed(() =>
     packageOptions.find((option) => option.key === packageForm.plan_key) ?? packageOptions[0]
@@ -178,6 +218,7 @@ const submitWithdrawalAction = (id, action) => {
                                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">User</th>
                                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Role</th>
                                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Referrer</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Joined</th>
                                                 <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.2em]">Balance</th>
                                             </tr>
                                         </thead>
@@ -192,7 +233,15 @@ const submitWithdrawalAction = (id, action) => {
                                                 @click="selectedUserId = user.id"
                                             >
                                                 <td class="px-4 py-4">
-                                                    <div class="font-semibold text-emerald-950">{{ user.name }}</div>
+                                                    <div class="flex flex-wrap items-center gap-2">
+                                                        <div class="font-semibold text-emerald-950">{{ user.name }}</div>
+                                                        <span
+                                                            v-if="user.is_new"
+                                                            class="rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-700"
+                                                        >
+                                                            New
+                                                        </span>
+                                                    </div>
                                                     <div class="text-xs text-slate-500">{{ user.email }}</div>
                                                 </td>
                                                 <td class="px-4 py-4 text-xs text-emerald-800">
@@ -209,12 +258,15 @@ const submitWithdrawalAction = (id, action) => {
                                                         {{ user.referrer.email }}
                                                     </div>
                                                 </td>
+                                                <td class="px-4 py-4 text-xs text-slate-500">
+                                                    {{ formatDate(user.created_at) }}
+                                                </td>
                                                 <td class="px-4 py-4 text-right font-semibold text-emerald-950">
                                                     {{ formatCurrency(user.balance_cents) }}
                                                 </td>
                                             </tr>
                                             <tr v-if="!filteredUsers.length">
-                                                <td class="px-4 py-6 text-center text-sm text-slate-500" colspan="4">
+                                                <td class="px-4 py-6 text-center text-sm text-slate-500" colspan="5">
                                                     No users match this search.
                                                 </td>
                                             </tr>
@@ -239,6 +291,7 @@ const submitWithdrawalAction = (id, action) => {
                                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">User</th>
                                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Type</th>
                                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Status</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em]">Date</th>
                                                 <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.2em]">Amount</th>
                                             </tr>
                                         </thead>
@@ -255,13 +308,24 @@ const submitWithdrawalAction = (id, action) => {
                                                     <div class="text-xs text-slate-500">{{ transaction.user?.email || '' }}</div>
                                                 </td>
                                                 <td class="px-4 py-4">
-                                                    <div class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
-                                                        {{ transaction.type === 'purchase' ? 'Package' : 'Withdrawal' }}
+                                                    <div class="flex flex-wrap items-center gap-2">
+                                                        <div class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                                                            {{ transaction.type === 'purchase' ? 'Package' : 'Withdrawal' }}
+                                                        </div>
+                                                        <span
+                                                            v-if="transaction.type === 'purchase' && transaction.is_new"
+                                                            class="rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-700"
+                                                        >
+                                                            New deposit
+                                                        </span>
                                                     </div>
                                                     <div class="text-xs text-slate-500">{{ transaction.description }}</div>
                                                 </td>
                                                 <td class="px-4 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
                                                     {{ transaction.status }}
+                                                </td>
+                                                <td class="px-4 py-4 text-xs text-slate-500">
+                                                    {{ formatDateTime(transaction.created_at) }}
                                                 </td>
                                                 <td class="px-4 py-4 text-right font-semibold text-emerald-950">
                                                     {{ formatCurrency(transaction.amount_cents) }}

@@ -35,6 +35,7 @@ class DepositManagementController extends Controller
                 'amount_cents' => $purchase->amount_cents,
                 'status' => $purchase->status,
                 'created_at' => optional($purchase->created_at)->toDateTimeString(),
+                'is_new' => $purchase->status === 'pending',
             ]);
 
         return Inertia::render('Admin/Deposits', [
