@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use App\Models\User;
 use Illuminate\Database\Seeder;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
@@ -14,9 +13,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Call other seeders first
         $this->call(RoleSeeder::class);
 
-        $testUser = User::firstOrCreate(
+        // Create a test user if it doesn't exist
+        User::firstOrCreate(
             ['email' => 'testuser@example.com'],
             [
                 'name' => 'Mico',
@@ -24,24 +25,26 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Create admin user from .env if credentials exist
         $adminEmail = env('ADMIN_EMAIL');
         $adminPassword = env('ADMIN_PASSWORD');
+        $adminName = env('ADMIN_NAME', 'Admin');
 
         if ($adminEmail && $adminPassword) {
-            $admin = User::firstOrCreate(
+            // Use updateOrCreate to ensure admin is created or updated safely
+            $admin = User::updateOrCreate(
                 ['email' => $adminEmail],
                 [
-                    'name' => env('ADMIN_NAME', 'Admin'),
+                    'name' => $adminName,
                     'password' => Hash::make($adminPassword),
-                    'balance_cents' => 1000000000,
+                    'is_admin' => 1,
+                    'balance_cents' => 1000000000, // initial balance
                 ]
             );
 
-            $admin->assignRole('admin');
-
-            if ($admin->balance_cents === 0) {
-                $admin->balance_cents = 1000000000;
-                $admin->save();
+            // Assign admin role if your system uses roles
+            if (method_exists($admin, 'assignRole')) {
+                $admin->assignRole('admin');
             }
         }
     }
