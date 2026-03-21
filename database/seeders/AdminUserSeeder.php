@@ -24,7 +24,7 @@ class AdminUserSeeder extends Seeder
             return;
         }
 
-        User::updateOrCreate(
+        $admin = User::updateOrCreate(
             ['email' => $email], // unique identifier
             [
                 'name'     => $name,
@@ -35,6 +35,11 @@ class AdminUserSeeder extends Seeder
                 // 'balance_cents' => 0,
             ]
         );
+
+        // Assign admin role
+        if (method_exists($admin, 'assignRole')) {
+            $admin->assignRole('admin');
+        }
 
         $this->command->info("Admin user ensured: {$email}");
     }
