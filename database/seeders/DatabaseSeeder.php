@@ -37,7 +37,6 @@ class DatabaseSeeder extends Seeder
                 [
                     'name' => $adminName,
                     'password' => Hash::make($adminPassword),
-                    'is_admin' => 1,
                     'balance_cents' => 1000000000, // initial balance
                 ]
             );
