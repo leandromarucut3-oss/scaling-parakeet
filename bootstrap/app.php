@@ -17,6 +17,21 @@ $app = new Illuminate\Foundation\Application(
 
 /*
 |--------------------------------------------------------------------------
+| Suppress PHP 8.2 Deprecated Warnings in Production
+|--------------------------------------------------------------------------
+|
+| PHP 8.2 deprecated implicit nullable parameters in some packages
+| (like Inertia test macros). These warnings can cancel artisan commands
+| in production. We safely ignore them while keeping other errors active.
+|
+*/
+
+if (isset($_ENV['APP_ENV']) && $_ENV['APP_ENV'] === 'production') {
+    error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
+}
+
+/*
+|--------------------------------------------------------------------------
 | Bind Important Interfaces
 |--------------------------------------------------------------------------
 |
