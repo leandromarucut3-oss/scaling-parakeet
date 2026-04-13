@@ -62,6 +62,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/invites', [InviteController::class, 'index'])->name('invites');
     Route::get('/statements', [StatementController::class, 'index'])->name('statements');
     Route::post('/buy-shares', [PurchaseController::class, 'store'])->name('shares.purchase');
