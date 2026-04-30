@@ -8,6 +8,7 @@ use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\WithdrawalController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\StatementController;
+use App\Http\Controllers\TransferController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -66,6 +67,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/statements', [StatementController::class, 'index'])->name('statements');
     Route::post('/buy-shares', [PurchaseController::class, 'store'])->name('shares.purchase');
     Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
+    Route::get('/transfer', [TransferController::class, 'index'])->name('transfer.index');
+    Route::post('/transfer', [TransferController::class, 'store'])->name('transfer.store');
 });
 
 require __DIR__.'/auth.php';

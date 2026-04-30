@@ -119,6 +119,12 @@ const submitWithdrawal = () => {
                                 Withdraw
                             </button>
                             <Link
+                                :href="route('transfer.index')"
+                                class="inline-flex items-center rounded-md border border-white/30 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-white/10"
+                            >
+                                Transfer
+                            </Link>
+                            <Link
                                 :href="route('statements')"
                                 class="inline-flex items-center rounded-md border border-white/30 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-white/10"
                             >
