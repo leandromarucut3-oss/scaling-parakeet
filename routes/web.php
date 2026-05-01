@@ -39,13 +39,13 @@ Route::get('/dashboard', function () {
     }
 
     return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth'])->name('dashboard');
 
 Route::get('/buy-shares', function () {
     return Inertia::render('BuyShares');
-})->middleware(['auth', 'verified'])->name('shares.buy');
+})->middleware(['auth'])->name('shares.buy');
 
-Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [UserManagementController::class, 'index'])->name('dashboard');
     Route::get('/withdrawals', [WithdrawalManagementController::class, 'index'])->name('withdrawals');
     Route::get('/deposits', [DepositManagementController::class, 'index'])->name('deposits');
@@ -66,7 +66,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware('auth')->group(function () {
     Route::get('/invites', [InviteController::class, 'index'])->name('invites');
     Route::get('/statements', [StatementController::class, 'index'])->name('statements');
     Route::post('/buy-shares', [PurchaseController::class, 'store'])->name('shares.purchase');
