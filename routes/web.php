@@ -9,6 +9,7 @@ use App\Http\Controllers\WithdrawalController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\StatementController;
 use App\Http\Controllers\TransferController;
+use App\Http\Controllers\FranchiseController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -69,6 +70,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
     Route::get('/transfer', [TransferController::class, 'index'])->name('transfer.index');
     Route::post('/transfer', [TransferController::class, 'store'])->name('transfer.store');
+    Route::post('/franchise', [FranchiseController::class, 'store'])->name('franchise.apply');
 });
 
 require __DIR__.'/auth.php';

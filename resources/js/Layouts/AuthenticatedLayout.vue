@@ -5,10 +5,11 @@ import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
 const showSidebar = ref(false);
+const showFranchiseModal = ref(false);
 const referralShared = ref(false);
 const page = usePage();
 const isAdmin = computed(() => page.props.auth?.user?.roles?.includes('admin'));
@@ -20,6 +21,15 @@ const referralCode = computed(() => page.props.auth?.user?.referral_code ?? '');
 const referralLink = computed(() =>
     referralUsername.value ? route('register.referral', referralUsername.value) : ''
 );
+
+const franchiseForm = useForm({
+    name: '',
+    email: '',
+    phone: '',
+    target_location: '',
+    business_plan: '',
+    investment_amount: '',
+});
 
 const copyReferralLink = async () => {
     if (!referralLink.value) {
@@ -48,6 +58,15 @@ const copyReferralLink = async () => {
     } catch (error) {
         // ignore clipboard errors
     }
+};
+
+const submitFranchiseApplication = () => {
+    franchiseForm.post(route('franchise.apply'), {
+        onSuccess: () => {
+            franchiseForm.reset();
+            showFranchiseModal.value = false;
+        },
+    });
 };
 </script>
 
@@ -184,6 +203,14 @@ const copyReferralLink = async () => {
                     <span>Withdrawal</span>
                     <span class="text-xs text-emerald-700">Go</span>
                 </Link>
+                <button
+                    type="button"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                    @click="showSidebar = false; showFranchiseModal = true"
+                >
+                    <span>Franchise Application</span>
+                    <span class="text-xs text-emerald-700">Apply</span>
+                </button>
             </div>
             <div class="border-t border-emerald-100 px-4 py-4 space-y-3">
                 <div class="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3">
@@ -217,5 +244,126 @@ const copyReferralLink = async () => {
                 </Link>
             </div>
         </aside>
+    </div>
+
+    <!-- Franchise Application Modal -->
+    <div v-if="showFranchiseModal" class="fixed inset-0 z-50">
+        <div class="absolute inset-0 bg-slate-900/50" @click="showFranchiseModal = false"></div>
+        <div class="relative flex min-h-screen items-center justify-center px-4">
+            <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                <div class="flex items-start justify-between">
+                    <div class="text-sm font-semibold text-emerald-900">Franchise Application</div>
+                    <button
+                        type="button"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-100 text-emerald-800 hover:bg-emerald-50"
+                        @click="showFranchiseModal = false"
+                        aria-label="Close"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form @submit.prevent="submitFranchiseApplication" class="mt-4 space-y-4">
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-emerald-900">Full Name</label>
+                        <input
+                            id="name"
+                            v-model="franchiseForm.name"
+                            type="text"
+                            class="mt-1 block w-full rounded-lg border border-emerald-100 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
+                            required
+                        />
+                        <div v-if="franchiseForm.errors.name" class="mt-2 text-xs text-rose-600">
+                            {{ franchiseForm.errors.name }}
+                        </div>
+                    </div>
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-emerald-900">Email</label>
+                        <input
+                            id="email"
+                            v-model="franchiseForm.email"
+                            type="email"
+                            class="mt-1 block w-full rounded-lg border border-emerald-100 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
+                            required
+                        />
+                        <div v-if="franchiseForm.errors.email" class="mt-2 text-xs text-rose-600">
+                            {{ franchiseForm.errors.email }}
+                        </div>
+                    </div>
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-emerald-900">Phone Number</label>
+                        <input
+                            id="phone"
+                            v-model="franchiseForm.phone"
+                            type="tel"
+                            class="mt-1 block w-full rounded-lg border border-emerald-100 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
+                            required
+                        />
+                        <div v-if="franchiseForm.errors.phone" class="mt-2 text-xs text-rose-600">
+                            {{ franchiseForm.errors.phone }}
+                        </div>
+                    </div>
+                    <div>
+                        <label for="target_location" class="block text-sm font-medium text-emerald-900">Target Location</label>
+                        <input
+                            id="target_location"
+                            v-model="franchiseForm.target_location"
+                            type="text"
+                            class="mt-1 block w-full rounded-lg border border-emerald-100 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
+                            placeholder="City, State/Country"
+                            required
+                        />
+                        <div v-if="franchiseForm.errors.target_location" class="mt-2 text-xs text-rose-600">
+                            {{ franchiseForm.errors.target_location }}
+                        </div>
+                    </div>
+                    <div>
+                        <label for="business_plan" class="block text-sm font-medium text-emerald-900">Business Plan</label>
+                        <textarea
+                            id="business_plan"
+                            v-model="franchiseForm.business_plan"
+                            rows="4"
+                            class="mt-1 block w-full rounded-lg border border-emerald-100 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
+                            placeholder="Describe your business plan..."
+                            required
+                        ></textarea>
+                        <div v-if="franchiseForm.errors.business_plan" class="mt-2 text-xs text-rose-600">
+                            {{ franchiseForm.errors.business_plan }}
+                        </div>
+                    </div>
+                    <div>
+                        <label for="investment_amount" class="block text-sm font-medium text-emerald-900">Investment Amount</label>
+                        <input
+                            id="investment_amount"
+                            v-model="franchiseForm.investment_amount"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            class="mt-1 block w-full rounded-lg border border-emerald-100 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
+                            placeholder="Enter amount in USD"
+                            required
+                        />
+                        <div v-if="franchiseForm.errors.investment_amount" class="mt-2 text-xs text-rose-600">
+                            {{ franchiseForm.errors.investment_amount }}
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-end">
+                        <button
+                            type="button"
+                            class="mr-3 rounded-lg border border-emerald-100 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-emerald-900 hover:bg-emerald-50"
+                            @click="showFranchiseModal = false"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            class="rounded-lg bg-emerald-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-emerald-900"
+                            :disabled="franchiseForm.processing"
+                        >
+                            Submit Application
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </template>

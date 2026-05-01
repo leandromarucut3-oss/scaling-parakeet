@@ -41,17 +41,12 @@ const activePaymentMode = ref(null);
 const unavailablePaymentMessage = ref('');
 const bankOptions = [
     {
-        key: 'bpi',
-        name: 'BPI',
-        image: '/BPI.png',
-    },
-    {
         key: 'landbank',
         name: 'Landbank',
         image: '/Landbank.png',
     },
 ];
-const selectedBankKey = ref(bankOptions[0]?.key ?? 'bpi');
+const selectedBankKey = ref(bankOptions[0]?.key ?? 'landbank');
 
 const page = usePage();
 const balanceCents = computed(() => page.props.auth?.user?.balance_cents ?? 0);
@@ -71,7 +66,7 @@ const form = useForm({
     amount: '',
     plan_key: options[0]?.key ?? 'premier',
     payment_method: 'account_balance',
-    bank_name: bankOptions[0]?.name ?? 'BPI',
+    bank_name: bankOptions[0]?.name ?? 'Landbank',
 });
 
 const getSlides = () => {
