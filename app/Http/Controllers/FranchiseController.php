@@ -14,7 +14,6 @@ class FranchiseController extends Controller
             'phone' => ['required', 'string', 'max:20'],
             'target_location' => ['required', 'string', 'max:255'],
             'business_plan' => ['required', 'string', 'max:5000'],
-            'investment_amount' => ['required', 'numeric', 'min:0'],
         ]);
 
         return back()->with('success', 'Franchise application submitted successfully. We will contact you soon.');

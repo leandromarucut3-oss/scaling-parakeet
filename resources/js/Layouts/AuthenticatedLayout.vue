@@ -28,7 +28,6 @@ const franchiseForm = useForm({
     phone: '',
     target_location: '',
     business_plan: '',
-    investment_amount: '',
 });
 
 const copyReferralLink = async () => {
@@ -328,22 +327,6 @@ const submitFranchiseApplication = () => {
                         ></textarea>
                         <div v-if="franchiseForm.errors.business_plan" class="mt-2 text-xs text-rose-600">
                             {{ franchiseForm.errors.business_plan }}
-                        </div>
-                    </div>
-                    <div>
-                        <label for="investment_amount" class="block text-sm font-medium text-emerald-900">Investment Amount</label>
-                        <input
-                            id="investment_amount"
-                            v-model="franchiseForm.investment_amount"
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            class="mt-1 block w-full rounded-lg border border-emerald-100 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                            placeholder="Enter amount in USD"
-                            required
-                        />
-                        <div v-if="franchiseForm.errors.investment_amount" class="mt-2 text-xs text-rose-600">
-                            {{ franchiseForm.errors.investment_amount }}
                         </div>
                     </div>
                     <div class="flex items-center justify-end">
