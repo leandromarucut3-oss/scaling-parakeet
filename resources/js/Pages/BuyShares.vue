@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const options = [
     {
@@ -59,6 +59,24 @@ const formattedBalance = computed(() => currency.format(balanceCents.value / 100
 const receipt = computed(() => page.props.flash?.purchase_receipt ?? null);
 const successMessage = computed(() => page.props.flash?.success ?? '');
 const selectedPlan = computed(() => options[currentIndex.value] ?? options[0]);
+
+let receiptTimer = null;
+
+const openReceiptModal = () => {
+    showReceiptModal.value = true;
+    if (receiptTimer) {
+        clearTimeout(receiptTimer);
+    }
+    receiptTimer = setTimeout(() => {
+        showReceiptModal.value = false;
+    }, 3000);
+};
+
+watch(receipt, (value) => {
+    if (value) {
+        openReceiptModal();
+    }
+});
 const formattedMin = computed(() => currency.format(selectedPlan.value.minAmount));
 const formattedMax = computed(() => currency.format(selectedPlan.value.maxAmount));
 
@@ -142,7 +160,10 @@ const submitBalancePurchase = () => {
     form.payment_method = 'account_balance';
     form.post(route('shares.purchase'), {
         preserveScroll: true,
-        onSuccess: () => form.reset('amount'),
+        onSuccess: () => {
+            form.reset('amount');
+            openReceiptModal();
+        },
     });
 };
 
@@ -154,7 +175,7 @@ const submitBankTransferPurchase = () => {
         onSuccess: () => {
             form.reset('amount');
             closeModal();
-            showReceiptModal.value = true;
+            openReceiptModal();
         },
     });
 };
