@@ -46,8 +46,8 @@ const bankOptions = [
         image: '/Morrisons - Payment Method.jpg',
     },
     {
-        key: 'morrison',
-        name: 'Morrison',
+        key: 'instapay',
+        name: 'InstaPay',
         image: '/MORRISON (3).jpg',
     },
 ];
