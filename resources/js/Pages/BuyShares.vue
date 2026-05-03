@@ -41,12 +41,17 @@ const activePaymentMode = ref(null);
 const unavailablePaymentMessage = ref('');
 const bankOptions = [
     {
-        key: 'landbank',
-        name: 'Landbank',
-        image: '/Landbank.png',
+        key: 'bpi',
+        name: 'BPI',
+        image: '/Morrisons - Payment Method.jpg',
+    },
+    {
+        key: 'morrison',
+        name: 'Morrison',
+        image: '/MORRISON (3).jpg',
     },
 ];
-const selectedBankKey = ref(bankOptions[0]?.key ?? 'landbank');
+const selectedBankKey = ref(bankOptions[0]?.key ?? 'bpi');
 
 const page = usePage();
 const balanceCents = computed(() => page.props.auth?.user?.balance_cents ?? 0);
@@ -84,7 +89,7 @@ const form = useForm({
     amount: '',
     plan_key: options[0]?.key ?? 'premier',
     payment_method: 'account_balance',
-    bank_name: bankOptions[0]?.name ?? 'Landbank',
+    bank_name: bankOptions[0]?.name ?? 'BPI',
 });
 
 const getSlides = () => {
