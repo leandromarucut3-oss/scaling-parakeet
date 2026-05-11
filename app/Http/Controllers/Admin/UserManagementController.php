@@ -25,6 +25,7 @@ class UserManagementController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'referral_code' => $user->referral_code,
                 'created_at' => optional($user->created_at)->toDateString(),
                 'is_new' => $user->created_at && $user->created_at->greaterThan(now()->subDay()),
                 'roles' => $user->getRoleNames(),
@@ -93,6 +94,7 @@ class UserManagementController extends Controller
             'adminBalanceCents' => $admin?->balance_cents ?? 0,
             'withdrawals' => $withdrawals,
             'recentTransactions' => $recentTransactions,
+            'appUrl' => config('app.url'),
         ]);
     }
 

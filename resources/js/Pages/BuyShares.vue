@@ -43,12 +43,12 @@ const bankOptions = [
     {
         key: 'bpi',
         name: 'BPI',
-        image: '/Morrisons - Payment Method.jpg',
+        image: '/BPI.jpg',
     },
     {
-        key: 'instapay',
-        name: 'InstaPay',
-        image: '/MORRISON (3).jpg',
+        key: 'bdo',
+        name: 'BDO',
+        image: '/BDO.jpg',
     },
 ];
 const selectedBankKey = ref(bankOptions[0]?.key ?? 'bpi');
