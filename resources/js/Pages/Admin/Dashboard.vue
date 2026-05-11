@@ -246,7 +246,7 @@ const submitWithdrawalAction = (id, action) => {
                                                             New
                                                         </span>
                                                     </div>
-                                                    <div class="text-xs text-slate-400">{{ appUrl }}/register/{{ user.referral_code }}</div>
+                                                    <div class="text-xs text-slate-400">{{ appUrl }}/register/{{ user.name }}</div>
                                                     <div class="text-xs text-slate-500">{{ user.email }}</div>
                                                 </td>
                                                 <td class="px-4 py-4 text-xs text-emerald-800">
