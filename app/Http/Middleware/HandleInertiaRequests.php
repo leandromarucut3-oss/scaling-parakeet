@@ -144,6 +144,26 @@ class HandleInertiaRequests extends Middleware
             }
         }
 
+        $plans = config('investment_plans', []);
+        $planCounts = Purchase::query()
+            ->selectRaw('plan_key, count(*) as count')
+            ->whereIn('plan_key', array_keys($plans))
+            ->groupBy('plan_key')
+            ->pluck('count', 'plan_key')
+            ->all();
+
+        $packageSlotDetails = collect($plans)
+            ->mapWithKeys(function (array $plan, string $planKey) use ($planCounts) {
+                $capacity = $plan['slot_capacity'] ?? 0;
+                $taken = (int) ($planCounts[$planKey] ?? 0);
+                return [$planKey => [
+                    'slot_capacity' => $capacity,
+                    'taken_slots' => $taken,
+                    'remaining_slots' => max(0, $capacity - $taken),
+                ]];
+            })
+            ->all();
+
         return [
             ...parent::share($request),
             'auth' => [
@@ -168,6 +188,7 @@ class HandleInertiaRequests extends Middleware
                 'interest_earned_cents' => $interestEarnedCents,
                 'daily_interest_cents' => $dailyInterestCents,
             ],
+            'packages' => $packageSlotDetails,
             'recent_activity' => $recentActivity,
             'admin_notifications' => $adminNotifications,
             'flash' => [

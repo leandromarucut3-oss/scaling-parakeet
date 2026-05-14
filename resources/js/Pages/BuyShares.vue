@@ -33,6 +33,17 @@ const options = [
     },
 ];
 
+const page = usePage();
+const packageSlots = computed(() => page.props.packages ?? {});
+const optionsWithSlots = computed(() =>
+    options.map((option) => ({
+        ...option,
+        remainingSlots: packageSlots.value[option.key]?.remaining_slots ?? null,
+        slotCapacity: packageSlots.value[option.key]?.slot_capacity ?? null,
+        soldOut: packageSlots.value[option.key]?.remaining_slots === 0,
+    }))
+);
+
 const carouselRef = ref(null);
 const currentIndex = ref(0);
 const isModalOpen = ref(false);
@@ -219,6 +230,19 @@ const formatPaymentMethod = (method) => {
 
         <div class="py-10">
             <div class="max-w-7xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
+                <div class="rounded-3xl bg-emerald-50/70 p-6 shadow-sm border border-emerald-100">
+                    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                            <h1 class="text-3xl font-semibold tracking-tight text-emerald-900">Morrisons Share Packages</h1>
+                            <p class="mt-2 max-w-2xl text-sm leading-6 text-emerald-700">
+                                Pick a Morrisons package and see how many slots are still available. Each purchase automatically reduces the remaining availability.
+                            </p>
+                        </div>
+                        <div class="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-emerald-900 shadow-inner border border-emerald-100">
+                            Available plans: Premier · Deluxe · Presidential
+                        </div>
+                    </div>
+                </div>
                 <div class="relative">
                     <div
                         ref="carouselRef"
@@ -227,7 +251,7 @@ const formatPaymentMethod = (method) => {
                         @scroll.passive="updateIndex"
                     >
                         <div
-                            v-for="(option, index) in options"
+                            v-for="(option, index) in optionsWithSlots"
                             :key="index"
                             class="min-w-[80%] snap-center sm:min-w-[60%] lg:min-w-[40%]"
                         >
@@ -237,12 +261,27 @@ const formatPaymentMethod = (method) => {
                                 @click="openModal"
                                 aria-label="Open payment options"
                             >
-                                <div class="aspect-[4961/7016] w-full bg-white">
+                                <div class="relative aspect-[4961/7016] w-full overflow-hidden rounded-[2rem] bg-white shadow-lg">
                                     <img
                                         :src="option.image"
                                         alt=""
-                                        class="h-full w-full object-contain"
+                                        class="h-full w-full object-cover"
                                     />
+                                    <div class="absolute inset-x-0 top-0 flex justify-between p-4">
+                                        <div
+                                            class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white"
+                                            :class="option.soldOut ? 'bg-rose-600' : 'bg-emerald-700'"
+                                        >
+                                            <span v-if="option.soldOut">Sold out</span>
+                                            <span v-else>{{ option.remainingSlots }} of {{ option.slotCapacity }} slots left</span>
+                                        </div>
+                                        <div class="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
+                                            {{ option.name }}
+                                        </div>
+                                    </div>
+                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/70 to-transparent px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.18em] text-white">
+                                        Morrisons investment
+                                    </div>
                                 </div>
                             </button>
                         </div>
