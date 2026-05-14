@@ -64,7 +64,6 @@ const bankOptions = [
 ];
 const selectedBankKey = ref(bankOptions[0]?.key ?? 'bpi');
 
-const page = usePage();
 const balanceCents = computed(() => page.props.auth?.user?.balance_cents ?? 0);
 const currency = new Intl.NumberFormat('en-US', {
     style: 'currency',
