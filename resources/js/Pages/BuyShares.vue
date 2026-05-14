@@ -35,13 +35,25 @@ const options = [
 
 const page = usePage();
 const packageSlots = computed(() => page.props.packages ?? {});
+
 const optionsWithSlots = computed(() =>
-    options.map((option) => ({
-        ...option,
-        remainingSlots: packageSlots.value[option.key]?.remaining_slots ?? null,
-        slotCapacity: packageSlots.value[option.key]?.slot_capacity ?? null,
-        soldOut: packageSlots.value[option.key]?.remaining_slots === 0,
-    }))
+    options.map((option) => {
+        // Get the specific data for this package key
+        const slotData = packageSlots.value[option.key];
+
+        // Ensure we have a number; default to 0 if missing
+        const left = slotData?.remaining_slots ?? 0;
+
+        return {
+            ...option,
+            remainingSlots: left,
+            // We keep this in case you need it for progress bars later
+            slotCapacity: slotData?.slot_capacity ?? null,
+            // This is the formatted string for your UI
+            availabilityLabel: `${left} slots left`,
+            soldOut: left === 0,
+        };
+    })
 );
 
 const carouselRef = ref(null);
@@ -272,7 +284,7 @@ const formatPaymentMethod = (method) => {
                                             :class="option.soldOut ? 'bg-rose-600' : 'bg-emerald-700'"
                                         >
                                             <span v-if="option.soldOut">Sold out</span>
-                                            <span v-else>{{ option.remainingSlots }} of {{ option.slotCapacity }} slots left</span>
+                                            <span v-else>{{ option.remainingSlots }} slots left</span>
                                         </div>
                                         <div class="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
                                             {{ option.name }}
