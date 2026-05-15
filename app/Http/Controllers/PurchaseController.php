@@ -28,6 +28,16 @@ class PurchaseController extends Controller
         $paymentMethod = $data['payment_method'];
         $bankName = $paymentMethod === 'bank_transfer' ? $data['bank_name'] : null;
 
+        $slotCapacity = $plan['slot_capacity'] ?? null;
+        if ($slotCapacity !== null) {
+            $availableSlots = $this->getRemainingSlots($data['plan_key']);
+            if ($availableSlots <= 0) {
+                throw ValidationException::withMessages([
+                    'plan_key' => 'This package is sold out.',
+                ]);
+            }
+        }
+
         if ($amountCents <= 0) {
             throw ValidationException::withMessages([
                 'amount' => 'Amount must be at least 0.01.',
@@ -108,5 +118,23 @@ class PurchaseController extends Controller
                 'created_at' => optional($purchase->created_at)->toDateTimeString(),
             ] : null,
         ]);
+    }
+
+    private function getRemainingSlots(string $planKey): int
+    {
+        $plans = config('investment_plans', []);
+        $plan = $plans[$planKey] ?? null;
+
+        if (! $plan || ! isset($plan['slot_capacity'])) {
+            return PHP_INT_MAX;
+        }
+
+        $slotCapacity = $plan['slot_capacity'];
+        $takenSlots = Purchase::query()
+            ->where('plan_key', $planKey)
+            ->lockForUpdate()
+            ->count();
+
+        return max(0, $slotCapacity - $takenSlots);
     }
 }
