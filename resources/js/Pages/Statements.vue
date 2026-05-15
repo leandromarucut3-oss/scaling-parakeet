@@ -16,6 +16,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    transfers: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const activeTab = ref('deposits');
@@ -32,6 +36,7 @@ const tabLabels = {
     deposits: 'Deposits',
     withdrawals: 'Withdrawals',
     interest: 'Interest',
+    transfers: 'Transfers',
 };
 
 const activeItems = computed(() => {
@@ -41,6 +46,10 @@ const activeItems = computed(() => {
 
     if (activeTab.value === 'interest') {
         return props.interest;
+    }
+
+    if (activeTab.value === 'transfers') {
+        return props.transfers;
     }
 
     return props.deposits;
@@ -58,7 +67,7 @@ const activeItems = computed(() => {
                         <div>
                             <div class="text-sm font-semibold text-emerald-800">Statements</div>
                             <div class="text-xs text-slate-500">
-                                Review your deposits, withdrawals, and interest history.
+                                Review your deposits, withdrawals, interest, and transfer history.
                             </div>
                         </div>
                         <div class="flex flex-wrap gap-2">
@@ -101,8 +110,11 @@ const activeItems = computed(() => {
                                                 <span v-else-if="activeTab === 'withdrawals'">
                                                     Withdrawal request
                                                 </span>
-                                                <span v-else>
+                                                <span v-else-if="activeTab === 'interest'">
                                                     Interest earned - {{ item.plan_name || 'Plan' }}
+                                                </span>
+                                                <span v-else>
+                                                    Transfer {{ item.direction === 'sent' ? 'sent' : 'received' }}
                                                 </span>
                                             </div>
                                             <div class="text-xs text-slate-500">
@@ -113,6 +125,9 @@ const activeItems = computed(() => {
                                             </div>
                                             <div v-if="activeTab === 'deposits' && item.remaining_days !== null" class="text-xs text-slate-500">
                                                 Remaining days: {{ item.remaining_days }}
+                                            </div>
+                                            <div v-if="activeTab === 'transfers'" class="text-xs text-slate-500">
+                                                {{ item.direction === 'sent' ? 'To:' : 'From:' }} {{ item.counterparty }}
                                             </div>
                                         </td>
                                         <td class="px-4 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">

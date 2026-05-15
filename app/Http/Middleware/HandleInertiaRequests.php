@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Purchase;
+use App\Models\Transfer;
 use App\Models\WithdrawalRequest;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -118,10 +119,37 @@ class HandleInertiaRequests extends Middleware
                     'created_at' => optional($purchase->created_at)->toDateTimeString(),
                 ]);
 
+            $transferActivity = Transfer::query()
+                ->where(function ($query) use ($user) {
+                    $query->where('sender_id', $user->id)
+                          ->orWhere('recipient_id', $user->id);
+                })
+                ->orderByDesc('created_at')
+                ->limit(10)
+                ->get()
+                ->map(function (Transfer $transfer) use ($user) {
+                    $isSender = $transfer->sender_id === $user->id;
+                    $counterparty = $isSender
+                        ? optional($transfer->recipient)->email
+                        : optional($transfer->sender)->email;
+
+                    return [
+                        'id' => 'transfer-'.$transfer->id,
+                        'type' => 'transfer',
+                        'title' => $isSender
+                            ? 'Transfer sent to '.$counterparty
+                            : 'Transfer received from '.$counterparty,
+                        'status' => 'completed',
+                        'amount_cents' => $transfer->amount_cents,
+                        'created_at' => optional($transfer->created_at)->toDateTimeString(),
+                    ];
+                });
+
             $recentActivity = collect($purchaseActivity)
                 ->merge($withdrawalActivity)
                 ->merge($interestActivity)
                 ->merge($referralActivity)
+                ->merge($transferActivity)
                 ->sortByDesc('created_at')
                 ->values()
                 ->take(6)

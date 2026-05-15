@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Transfer;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -49,6 +50,13 @@ class TransferController extends Controller
 
                 $senderLocked->save();
                 $recipientLocked->save();
+
+                Transfer::create([
+                    'sender_id' => $senderLocked->id,
+                    'recipient_id' => $recipientLocked->id,
+                    'amount_cents' => $amountCents,
+                    'status' => 'completed',
+                ]);
             });
 
             return redirect()->route('transfer.index')->with('success', 'Funds transferred successfully.');

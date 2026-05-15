@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Purchase;
+use App\Models\Transfer;
 use App\Models\WithdrawalRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -61,10 +62,34 @@ class StatementController extends Controller
                 'created_at' => optional($purchase->last_interest_at)->toDateTimeString(),
             ]);
 
+        $transfers = Transfer::query()
+            ->where(function ($query) use ($user) {
+                $query->where('sender_id', $user->id)
+                      ->orWhere('recipient_id', $user->id);
+            })
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function (Transfer $transfer) use ($user) {
+                $isSender = $transfer->sender_id === $user->id;
+                $counterparty = $isSender
+                    ? optional($transfer->recipient)->email
+                    : optional($transfer->sender)->email;
+
+                return [
+                    'id' => $transfer->id,
+                    'direction' => $isSender ? 'sent' : 'received',
+                    'counterparty' => $counterparty,
+                    'amount_cents' => $transfer->amount_cents,
+                    'status' => 'completed',
+                    'created_at' => optional($transfer->created_at)->toDateTimeString(),
+                ];
+            });
+
         return Inertia::render('Statements', [
             'deposits' => $deposits,
             'withdrawals' => $withdrawals,
             'interest' => $interest,
+            'transfers' => $transfers,
         ]);
     }
 }
