@@ -132,7 +132,6 @@ class PurchaseController extends Controller
         $slotCapacity = $plan['slot_capacity'];
         $takenSlots = Purchase::query()
             ->where('plan_key', $planKey)
-            ->lockForUpdate()
             ->count();
 
         return max(0, $slotCapacity - $takenSlots);
