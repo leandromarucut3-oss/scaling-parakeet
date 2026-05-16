@@ -62,21 +62,32 @@ class TransferController extends Controller
                 ]);
             });
 
+            $receipt = [
+                'amount_cents' => $amountCents,
+                'sender_name' => $sender->name,
+                'sender_business' => 'Morrisons Commercial & General Merchandise Co.',
+                'recipient_name' => $recipient->name ?: $recipient->email,
+                'recipient_method' => 'Morrisons wallet',
+                'reference_number' => sprintf('MRC-FT-%s-%s', $now->format('Ymd'), $receiptTransfer->id),
+                'transaction_date' => $now->format('F j, Y • g:i A'),
+                'destination_account' => $recipient->email,
+                'processing_fee' => 0,
+                'status' => 'Completed',
+                'remarks' => 'Payment successfully transferred and verified through the Morrisons secure transaction system.',
+            ];
+
+            \Log::info('Transfer completed successfully', [
+                'transfer_id' => $receiptTransfer->id,
+                'sender_id' => $sender->id,
+                'recipient_id' => $recipient->id,
+                'amount_cents' => $amountCents,
+                'reference_number' => $receipt['reference_number'],
+                'transaction_date' => $receipt['transaction_date'],
+            ]);
+
             return redirect()->route('transfer.index')->with([
                 'success' => 'Funds transferred successfully.',
-                'transfer_receipt' => [
-                    'amount_cents' => $amountCents,
-                    'sender_name' => $sender->name,
-                    'sender_business' => 'Morrisons Commercial & General Merchandise Co.',
-                    'recipient_name' => $recipient->name ?: $recipient->email,
-                    'recipient_method' => 'Morrisons wallet',
-                    'reference_number' => sprintf('MRC-FT-%s-%s', $now->format('Ymd'), $receiptTransfer->id),
-                    'transaction_date' => $now->format('F j, Y • g:i A'),
-                    'destination_account' => $recipient->email,
-                    'processing_fee' => 0,
-                    'status' => 'Completed',
-                    'remarks' => 'Payment successfully transferred and verified through the Morrisons secure transaction system.',
-                ],
+                'transfer_receipt' => $receipt,
             ]);
         } catch (\Exception $e) {
             \Log::error('Transfer failed: ' . $e->getMessage());
