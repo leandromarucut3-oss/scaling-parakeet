@@ -11,6 +11,8 @@ use App\Http\Controllers\ContractController;
 use App\Http\Controllers\StatementController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\FranchiseController;
+use App\Http\Controllers\BackupController;
+
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -20,9 +22,7 @@ use Inertia\Inertia;
 | Web Routes
 |--------------------------------------------------------------------------
 |
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
+| Here is where you can register web routes for your application.
 |
 */
 
@@ -46,37 +46,111 @@ Route::get('/buy-shares', function () {
     return Inertia::render('BuyShares');
 })->middleware(['auth'])->name('shares.buy');
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [UserManagementController::class, 'index'])->name('dashboard');
-    Route::get('/withdrawals', [WithdrawalManagementController::class, 'index'])->name('withdrawals');
-    Route::get('/deposits', [DepositManagementController::class, 'index'])->name('deposits');
-    Route::post('/deposits/{purchase}/approve', [DepositManagementController::class, 'approve'])
-        ->name('deposits.approve');
-    Route::post('/users/{user}/transfer', [UserManagementController::class, 'transfer'])->name('users.transfer');
-    Route::post('/users/{user}/grant-package', [UserManagementController::class, 'grantPackage'])
-        ->name('users.grant-package');
-    Route::post('/withdrawals/{withdrawal}/approve', [WithdrawalManagementController::class, 'approve'])
-        ->name('withdrawals.approve');
-    Route::post('/withdrawals/{withdrawal}/reject', [WithdrawalManagementController::class, 'reject'])
-        ->name('withdrawals.reject');
-});
+
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN ROUTES
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        Route::get('/', [UserManagementController::class, 'index'])
+            ->name('dashboard');
+
+        Route::get('/withdrawals', [WithdrawalManagementController::class, 'index'])
+            ->name('withdrawals');
+
+        Route::get('/deposits', [DepositManagementController::class, 'index'])
+            ->name('deposits');
+
+        Route::post('/deposits/{purchase}/approve', [DepositManagementController::class, 'approve'])
+            ->name('deposits.approve');
+
+        Route::post('/users/{user}/transfer', [UserManagementController::class, 'transfer'])
+            ->name('users.transfer');
+
+        Route::post('/users/{user}/grant-package', [UserManagementController::class, 'grantPackage'])
+            ->name('users.grant-package');
+
+        Route::post('/withdrawals/{withdrawal}/approve', [WithdrawalManagementController::class, 'approve'])
+            ->name('withdrawals.approve');
+
+        Route::post('/withdrawals/{withdrawal}/reject', [WithdrawalManagementController::class, 'reject'])
+            ->name('withdrawals.reject');
+
+        /*
+        |--------------------------------------------------------------------------
+        | BACKUP ROUTE
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/backup', [BackupController::class, 'download'])
+            ->name('backup.download');
+    });
+
+
+
+/*
+|--------------------------------------------------------------------------
+| PROFILE ROUTES
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+
+    Route::patch('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
 });
 
+
+
+/*
+|--------------------------------------------------------------------------
+| USER ROUTES
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware('auth')->group(function () {
-    Route::get('/invites', [InviteController::class, 'index'])->name('invites');
-    Route::get('/statements', [StatementController::class, 'index'])->name('statements');
-    Route::post('/buy-shares', [PurchaseController::class, 'store'])->name('shares.purchase');
-    Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
-    Route::get('/transfer', [TransferController::class, 'index'])->name('transfer.index');
-    Route::post('/transfer', [TransferController::class, 'store'])->name('transfer.store');
-    Route::get('/contract', [ContractController::class, 'index'])->name('contract.index');
-    Route::post('/contract', [ContractController::class, 'store'])->name('contract.store');
-    Route::post('/franchise', [FranchiseController::class, 'store'])->name('franchise.apply');
+
+    Route::get('/invites', [InviteController::class, 'index'])
+        ->name('invites');
+
+    Route::get('/statements', [StatementController::class, 'index'])
+        ->name('statements');
+
+    Route::post('/buy-shares', [PurchaseController::class, 'store'])
+        ->name('shares.purchase');
+
+    Route::post('/withdrawals', [WithdrawalController::class, 'store'])
+        ->name('withdrawals.store');
+
+    Route::get('/transfer', [TransferController::class, 'index'])
+        ->name('transfer.index');
+
+    Route::post('/transfer', [TransferController::class, 'store'])
+        ->name('transfer.store');
+
+    Route::get('/contract', [ContractController::class, 'index'])
+        ->name('contract.index');
+
+    Route::post('/contract', [ContractController::class, 'store'])
+        ->name('contract.store');
+
+    Route::post('/franchise', [FranchiseController::class, 'store'])
+        ->name('franchise.apply');
 });
+
+
 
 require __DIR__.'/auth.php';
