@@ -13,10 +13,13 @@ class ContractService
 {
     public static function generatePurchaseContractPdf(User $user, Purchase $purchase, Contract $contract): string
     {
+        $usdToPhpRate = (float) env('USD_TO_PHP_RATE', 55.0);
+
         return Pdf::loadView('contracts.pdf', [
             'user' => $user,
             'purchase' => $purchase,
             'contract' => $contract,
+            'usdToPhpRate' => $usdToPhpRate,
         ])->setPaper('a4')->output();
     }
 

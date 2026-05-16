@@ -131,6 +131,13 @@ WHEREAS, the investor has expressed intent to participate in the Company's Co-Pa
 NOW, THEREFORE, for and in consideration of the foregoing premises and the mutual covenants herein contained, the parties hereby agree as follows:
 </p>
 
+@php
+    $usdAmount = $purchase->amount_cents / 100;
+    $phpAmount = $usdAmount * $usdToPhpRate;
+    $dailyInterestUsd = $usdAmount * ($purchase->daily_interest_bps / 10000);
+    $dailyInterestPhp = $dailyInterestUsd * $usdToPhpRate;
+@endphp
+
 <div class="section">
 <h3>1. INVESTMENT PACKAGE</h3>
 
@@ -143,7 +150,7 @@ days</p>
 
 <p>Investment Amount:
 P
-<span class="fillable">{{ number_format($purchase->amount_cents / 100, 2) }}</span></p>
+<span class="fillable">{{ number_format($phpAmount, 2) }}</span></p>
 
 <p>Daily Interest Rate:
 <span class="fillable">{{ number_format($purchase->daily_interest_bps / 100, 2) }}%</span></p>
@@ -157,7 +164,7 @@ P
 
 <p class="justify">
 The Company shall pay the Investor a daily interest income based on the selected plan and investment amount, computed at PHP
-<span class="fillable">{{ number_format(($purchase->amount_cents / 100) * ($purchase->daily_interest_bps / 10000), 2) }}</span>
+<span class="fillable">{{ number_format($dailyInterestPhp, 2) }}</span>
 per day.
 </p>
 
