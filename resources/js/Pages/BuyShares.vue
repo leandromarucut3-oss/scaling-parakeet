@@ -238,20 +238,10 @@ const formatRate = (bps) => ((bps ?? 0) / 100).toFixed(2);
 const selectedBank = computed(() =>
     bankOptions.find((option) => option.key === selectedBankKey.value) ?? bankOptions[0]
 );
-const selectedBankQrUrl = computed(() => {
-    const bank = selectedBank.value;
-    return bank
-        ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(bank.qrData)}`
-        : '';
-});
-
 const selectBank = (option) => {
     selectedBankKey.value = option.key;
     form.bank_name = option.name;
-
-    if (option.noQr) {
-        openQrModal();
-    }
+    openQrModal();
 };
 
 const openQrModal = () => {
@@ -601,18 +591,8 @@ const receiptDestinationAccount = computed(() => {
                                         Selected account: {{ selectedBank.accountNumber }}
                                     </div>
                                 </div>
-                                <div class="mt-4">
-                                    <button
-                                        v-if="selectedBank.qrData"
-                                        type="button"
-                                        class="inline-flex items-center justify-center rounded-lg bg-emerald-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-emerald-900"
-                                        @click="openQrModal"
-                                    >
-                                        View QR code
-                                    </button>
-                                    <div v-else class="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
-                                        Security Bank uses account number only. Tap the account number in the modal to copy.
-                                    </div>
+                                <div class="text-xs text-emerald-700 mt-4">
+                                    Select a bank option above to view the payment details in a separate modal.
                                 </div>
                                 <div class="text-xs text-emerald-700 mt-3">
                                     Use the details above to complete your transfer, then enter the amount you paid.
@@ -694,26 +674,21 @@ const receiptDestinationAccount = computed(() => {
                     </div>
                     <div class="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-900">
                         <div class="font-semibold">
-                            <span v-if="selectedBank.qrData">Scan the QR code with your bank app</span>
-                            <span v-else>Use the account number below</span>
+                            <span v-if="selectedBank.key !== 'security'">View the bank transfer details below.</span>
+                            <span v-else>Use the Security Bank account details below.</span>
                         </div>
-                        <div v-if="selectedBank.qrData" class="mt-4 flex items-center justify-center">
+                        <div v-if="selectedBank.key !== 'security'" class="mt-4 flex items-center justify-center">
                             <img
-                                :src="selectedBankQrUrl"
-                                :alt="`QR code for ${selectedBank.name}`"
+                                :src="selectedBank.image"
+                                :alt="`Bank details for ${selectedBank.name}`"
                                 class="rounded-2xl border border-emerald-100 bg-white object-contain max-h-[60vh] max-w-full"
                             />
                         </div>
-                        <div v-else class="mt-4 rounded-2xl border border-emerald-100 bg-white p-4 text-center text-sm text-slate-600">
-                            QR code is unavailable for this bank. Please copy the account number below instead.
-                        </div>
-                        <div class="mt-4 rounded-2xl border border-emerald-100 bg-white p-4">
-                            <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Account holder</div>
-                            <div class="mt-1 text-sm font-semibold text-emerald-900">{{ selectedBank.accountName }}</div>
-                            <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mt-3">Account number</div>
+                        <div v-else class="mt-4 rounded-2xl border border-emerald-100 bg-white p-6 text-center text-sm text-slate-600">
+                            <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Security Bank account number</div>
                             <button
                                 type="button"
-                                class="mt-2 w-full rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-left text-sm text-emerald-900 hover:bg-emerald-100"
+                                class="mt-4 w-full rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-left text-sm text-emerald-900 hover:bg-emerald-100"
                                 @click="copyAccountNumber"
                             >
                                 <div class="flex items-center justify-between gap-3">
@@ -723,7 +698,13 @@ const receiptDestinationAccount = computed(() => {
                                     </span>
                                 </div>
                             </button>
-                            <div class="mt-2 text-xs text-slate-500">Click the account number to copy it automatically.</div>
+                            <div class="mt-2 text-xs text-slate-500">Tap to copy and complete the transfer from your bank app.</div>
+                        </div>
+                        <div class="mt-4 rounded-2xl border border-emerald-100 bg-white p-4">
+                            <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Account holder</div>
+                            <div class="mt-1 text-sm font-semibold text-emerald-900">{{ selectedBank.accountName }}</div>
+                            <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mt-3">Account number</div>
+                            <div class="mt-1 text-sm text-emerald-900">{{ selectedBank.accountNumber }}</div>
                         </div>
                     </div>
                     <button
