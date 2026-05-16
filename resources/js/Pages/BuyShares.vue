@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onUnmounted } from 'vue';
 
 const options = [
     {
@@ -263,6 +263,30 @@ const closeQrModal = () => {
     showQrModal.value = false;
 };
 
+// Prevent background/body scrolling when any modal is open
+const stopBodyScroll = () => {
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+};
+
+const restoreBodyScroll = () => {
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+};
+
+watch([isModalOpen, showQrModal, showReceiptModal], (vals) => {
+    const anyOpen = vals.some(Boolean);
+    if (anyOpen) {
+        stopBodyScroll();
+    } else {
+        restoreBodyScroll();
+    }
+});
+
+onUnmounted(() => {
+    restoreBodyScroll();
+});
+
 const copyAccountNumber = async () => {
     const accountNumber = selectedBank.value?.accountNumber;
     if (!accountNumber) {
@@ -470,7 +494,7 @@ const receiptDestinationAccount = computed(() => {
         <div v-if="isModalOpen" class="fixed inset-0 z-50">
             <div class="absolute inset-0 bg-slate-900/50" @click="closeModal"></div>
             <div class="relative flex min-h-screen items-center justify-center px-4">
-                <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl max-h-[90vh] overflow-auto">
                     <div class="flex items-start justify-between">
                         <div class="text-sm font-semibold text-emerald-900">Mode of payment</div>
                         <button
@@ -654,7 +678,7 @@ const receiptDestinationAccount = computed(() => {
         <div v-if="showQrModal" class="fixed inset-0 z-50">
             <div class="absolute inset-0 bg-slate-900/50" @click="closeQrModal"></div>
             <div class="relative flex min-h-screen items-center justify-center px-4">
-                <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl max-h-[90vh] overflow-auto">
                     <div class="flex items-start justify-between">
                         <div class="text-sm font-semibold text-emerald-900">
                             {{ selectedBank.name }} payment details
@@ -677,7 +701,7 @@ const receiptDestinationAccount = computed(() => {
                             <img
                                 :src="selectedBankQrUrl"
                                 :alt="`QR code for ${selectedBank.name}`"
-                                class="h-64 w-64 rounded-2xl border border-emerald-100 bg-white object-contain"
+                                class="rounded-2xl border border-emerald-100 bg-white object-contain max-h-[60vh] max-w-full"
                             />
                         </div>
                         <div v-else class="mt-4 rounded-2xl border border-emerald-100 bg-white p-4 text-center text-sm text-slate-600">
@@ -716,7 +740,7 @@ const receiptDestinationAccount = computed(() => {
         <div v-if="showReceiptModal && receipt" class="fixed inset-0 z-50">
             <div class="absolute inset-0 bg-slate-900/50" @click="closeReceiptModal"></div>
             <div class="relative flex min-h-screen items-center justify-center px-4">
-                <div class="w-full max-w-md rounded-2xl border border-emerald-100 bg-white p-6 text-sm text-emerald-900 shadow-2xl">
+                <div class="w-full max-w-md rounded-2xl border border-emerald-100 bg-white p-6 text-sm text-emerald-900 shadow-2xl max-h-[90vh] overflow-auto">
                     <div class="flex items-center justify-between">
                         <div class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">Receipt</div>
                         <button
