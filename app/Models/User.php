@@ -9,7 +9,9 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Contract;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -79,5 +81,10 @@ class User extends Authenticatable
     public function referrals(): HasMany
     {
         return $this->hasMany(self::class, 'referrer_id');
+    }
+
+    public function contract(): HasOne
+    {
+        return $this->hasOne(Contract::class);
     }
 }

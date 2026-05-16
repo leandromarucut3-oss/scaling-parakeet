@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\DepositManagementController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\WithdrawalController;
 use App\Http\Controllers\InviteController;
+use App\Http\Controllers\ContractController;
 use App\Http\Controllers\StatementController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\FranchiseController;
@@ -73,6 +74,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
     Route::get('/transfer', [TransferController::class, 'index'])->name('transfer.index');
     Route::post('/transfer', [TransferController::class, 'store'])->name('transfer.store');
+    Route::get('/contract', [ContractController::class, 'index'])->name('contract.index');
+    Route::post('/contract', [ContractController::class, 'store'])->name('contract.store');
     Route::post('/franchise', [FranchiseController::class, 'store'])->name('franchise.apply');
 });
 

@@ -102,6 +102,6 @@ onMounted(() => {
 });
 
 const submitTransfer = () => {
-    form.post(route('transfer.store'));
+    form.post(route('transfer.store', {}, false));
 };
 </script>

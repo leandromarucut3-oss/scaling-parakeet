@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>MORRISONS GLOBAL | Investment Partnership Agreement</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+<style>
+
+:root{
+    --primary:#006b3c;
+    --primary-dark:#004f2c;
+    --accent:#d4af37;
+    --text:#222;
+    --muted:#666;
+    --border:#dddddd;
+    --bg:#f3f5f7;
+}
+
+*{
+    box-sizing:border-box;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    margin:0;
+    padding:25px;
+    background:var(--bg);
+    font-family:"Inter",sans-serif;
+    color:var(--text);
+    line-height:1.7;
+}
+
+/* =========================================
+   PAGE
+========================================= */
+
+.page{
+    width:210mm;
+    min-height:297mm;
+    margin:0 auto 30px;
+    background:white;
+    padding:28mm 24mm;
+    position:relative;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+    page-break-after:always;
+}
+
+.page::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:8px;
+    background:linear-gradient(90deg,var(--primary),var(--accent));
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.logo-area{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.company-name{
+    font-size:32px;
+    font-weight:800;
+    color:var(--primary);
+    letter-spacing:.5px;
+}
+
+.document-title{
+    font-size:15px;
+    text-transform:uppercase;
+    letter-spacing:4px;
+    margin-top:6px;
+    color:#444;
+    font-weight:700;
+}
+
+.divider{
+    width:90px;
+    height:3px;
+    background:var(--accent);
+    margin:18px auto 0;
+    border-radius:50px;
+}
+
+/* =========================================
+   TEXT
+========================================= */
+
+p{
+    margin:0 0 18px;
+    text-align:justify;
+}
+
+.section-title{
+    margin-top:30px;
+    margin-bottom:16px;
+    font-size:15px;
+    font-weight:800;
+    text-transform:uppercase;
+    color:var(--primary-dark);
+    letter-spacing:1px;
+    border-bottom:2px solid #efefef;
+    padding-bottom:8px;
+}
+
+.info-box{
+    background:#fafafa;
+    border:1px solid #ececec;
+    border-radius:12px;
+    padding:20px;
+    margin-top:20px;
+}
+
+/* =========================================
+   INPUTS
+========================================= */
+
+input[type="text"],
+input[type="date"],
+textarea{
+    border:none;
+    border-bottom:1.8px solid #888;
+    background:transparent;
+    padding:5px 4px;
+    font-family:inherit;
+    font-size:14px;
+    outline:none;
+    transition:.2s ease;
+}
+
+input:focus,
+textarea:focus{
+    border-color:var(--primary);
+}
+
+.grid-2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+/* =========================================
+   SIGNATURE
+========================================= */
+
+.signature-wrapper{
+    display:flex;
+    justify-content:space-between;
+    gap:40px;
+    margin-top:60px;
+}
+
+.signature-block{
+    flex:1;
+    text-align:center;
+}
+
+.signature-area{
+    width:100%;
+    max-width:320px;
+    height:120px;
+    border:2px dashed #cfcfcf;
+    border-radius:12px;
+    background:#fafafa;
+}
+
+.signature-line{
+    margin-top:12px;
+    border-top:1px solid #000;
+    padding-top:8px;
+    font-size:13px;
+    font-weight:600;
+}
+
+/* =========================================
+   TABLE
+========================================= */
+
+.table-responsive{
+    width:100%;
+    overflow-x:auto;
+    margin-top:20px;
+}
+
+.custom-table{
+    width:100%;
+    min-width:700px;
+    border-collapse:collapse;
+}
+
+.custom-table th{
+    background:var(--primary);
+    color:white;
+    padding:14px;
+    text-align:left;
+    font-size:13px;
+}
+
+.custom-table td{
+    border:1px solid var(--border);
+    padding:12px;
+    background:white;
+}
+
+.custom-table input{
+    width:100%;
+    min-width:120px;
+}
+
+/* =========================================
+   CONTROLS
+========================================= */
+
+.controls{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    z-index:9999;
+
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+
+    background:white;
+    padding:18px;
+
+    border-radius:18px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.15);
+}
+
+.btn{
+    border:none;
+    padding:14px 18px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:700;
+    transition:.2s ease;
+    font-family:inherit;
+    min-width:220px;
+}
+
+.btn-primary{
+    background:var(--primary);
+    color:white;
+}
+
+.btn-primary:hover{
+    background:var(--primary-dark);
+}
+
+.btn-secondary{
+    background:#ececec;
+    color:#222;
+}
+
+.btn-dark{
+    background:#111;
+    color:white;
+}
+
+.footer-note{
+    margin-top:40px;
+    text-align:center;
+    font-size:12px;
+    color:#777;
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media(max-width:768px){
+
+    body{
+        padding:10px;
+    }
+
+    .page{
+        width:100%;
+        min-height:auto;
+        padding:22px;
+        border-radius:0;
+        overflow:hidden;
+    }
+
+    .company-name{
+        font-size:24px;
+    }
+
+    .document-title{
+        font-size:12px;
+        letter-spacing:2px;
+    }
+
+    .grid-2{
+        grid-template-columns:1fr;
+    }
+
+    .signature-wrapper{
+        flex-direction:column;
+        gap:40px;
+    }
+
+    .controls{
+        position:relative;
+        right:auto;
+        bottom:auto;
+        width:100%;
+        margin-top:30px;
+    }
+
+    .btn{
+        width:100%;
+        min-width:auto;
+    }
+
+    .custom-table{
+        min-width:650px;
+    }
+}
+
+/* =========================================
+   PRINT
+========================================= */
+
+@media print{
+
+    body{
+        background:white;
+        padding:0;
+    }
+
+    .controls{
+        display:none !important;
+    }
+
+    .page{
+        margin:0;
+        box-shadow:none;
+        border-radius:0;
+    }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- CONTROLS -->
+<div class="controls no-print">
+
+    <button class="btn btn-secondary" onclick="clearSignature()">
+        Clear Signature
+    </button>
+
+    <button class="btn btn-primary" onclick="submitContract()">
+        Submit Contract
+    </button>
+
+    <button class="btn btn-dark" onclick="window.print()">
+        Generate PDF / Print
+    </button>
+
+</div>
+
+<!-- PAGE 1 -->
+<div class="page">
+
+    <div class="logo-area">
+        <div class="company-name">MORRISONS GLOBAL</div>
+
+        <div class="document-title">
+            Investment Partnership Agreement
+        </div>
+
+        <div class="divider"></div>
+    </div>
+
+    <p>
+        This Investment Partnership Agreement (“Agreement”) is entered into on
+        <input type="date">
+        by and between:
+    </p>
+
+    <div class="info-box">
+
+        <p>
+            <strong>MORRISONS GLOBAL</strong>, a duly organized and existing entity operating under the applicable laws of the Republic of the Philippines, with principal office located at 18/20 Upper McKinley Building, McKinley Hill, Taguig City, Philippines, represented herein by its authorized Finance Officer,
+            <strong>Mr. Jubert Undaya Yacup</strong>,
+            hereinafter referred to as the
+            <strong>“Company”</strong>.
+        </p>
+
+        <p><strong>AND</strong></p>
+
+        <p>
+            <input type="text" placeholder="Investor Full Name" size="35">,
+            of legal age,
+            <input type="text" placeholder="Civil Status" size="15">,
+            residing at
+            <input type="text" placeholder="Complete Address" size="50">,
+            Philippines, hereinafter referred to as the
+            <strong>“Investor”</strong>.
+        </p>
+
+    </div>
+
+    <div class="section-title">
+        Witnesseth
+    </div>
+
+    <p>
+        WHEREAS, the Company operates and manages participation-based investment opportunities through its Co-Partnership Investment Program;
+    </p>
+
+    <p>
+        WHEREAS, the Investor voluntarily desires to participate in the Company’s investment program subject to the terms and conditions stated herein;
+    </p>
+
+    <p>
+        NOW THEREFORE, in consideration of the mutual covenants and agreements contained herein, both parties agree as follows:
+    </p>
+
+    <div class="section-title">
+        1. Investment Package
+    </div>
+
+    <div class="grid-2">
+
+        <p>
+            Plan Type:<br>
+            <input type="text" size="30">
+        </p>
+
+        <p>
+            Contract Term:<br>
+            <input type="text" size="30">
+        </p>
+
+        <p>
+            Investment Amount:<br>
+            <input type="text" size="30">
+        </p>
+
+        <p>
+            Daily Interest Rate:<br>
+            <input type="text" size="30">
+        </p>
+
+    </div>
+
+</div>
+
+<!-- PAGE 2 -->
+<div class="page">
+
+    <div class="section-title">
+        2. Term and Payment of Interest
+    </div>
+
+    <p>
+        The Company agrees to provide the Investor with daily earnings or interest computed according to the agreed investment package and prevailing program terms.
+    </p>
+
+    <p>
+        Interest earnings shall be credited daily to the Investor’s designated account or payment channel registered with the Company.
+    </p>
+
+    <p>
+        Upon completion of the agreed investment term of
+        <input type="text" size="10">
+        days, the Investor shall be entitled to receive the full return of capital subject to verification and processing requirements.
+    </p>
+
+    <div class="section-title">
+        3. Withdrawal of Capital
+    </div>
+
+    <p>
+        The Investor may request withdrawal of capital upon maturity of the investment contract, subject to the Company’s standard processing procedures.
+    </p>
+
+    <div class="section-title">
+        4. Early Withdrawal
+    </div>
+
+    <p>
+        In the event the Investor requests early withdrawal prior to contract maturity, the Company reserves the right to impose an early termination fee equivalent to ten percent (10%) of the invested amount.
+    </p>
+
+    <div class="section-title">
+        5. Confidentiality
+    </div>
+
+    <p>
+        Both parties agree to maintain strict confidentiality regarding all non-public business information, financial details, operational processes, and proprietary matters obtained during the duration of this Agreement.
+    </p>
+
+</div>
+
+<!-- PAGE 3 -->
+<div class="page">
+
+    <div class="section-title">
+        6. Non-Transferability
+    </div>
+
+    <p>
+        The rights and obligations arising from this Agreement are personal to the Investor and may not be assigned or transferred without prior written approval from the Company.
+    </p>
+
+    <div class="section-title">
+        7. Dispute Resolution
+    </div>
+
+    <p>
+        Any dispute, controversy, or claim arising out of or relating to this Agreement shall first be resolved amicably through mutual discussions. Should the dispute remain unresolved, the matter shall be submitted to arbitration in Taguig City, Philippines.
+    </p>
+
+    <div class="section-title">
+        8. Governing Law
+    </div>
+
+    <p>
+        This Agreement shall be governed by and construed in accordance with the laws of the Republic of the Philippines.
+    </p>
+
+    <div class="section-title">
+        9. Entire Agreement
+    </div>
+
+    <p>
+        This document constitutes the complete agreement between the parties and supersedes all prior understandings, discussions, or agreements relating to the subject matter herein.
+    </p>
+
+</div>
+
+<!-- PAGE 4 -->
+<div class="page">
+
+    <div class="section-title">
+        Execution and Signatures
+    </div>
+
+    <p>
+        IN WITNESS WHEREOF, the parties have hereunto affixed their signatures this
+        <input type="text" size="15">
+        at Taguig City, Philippines.
+    </p>
+
+    <div class="signature-wrapper">
+
+        <div class="signature-block">
+
+            <div style="height:120px;"></div>
+
+            <div class="signature-line">
+                Jubert Undaya Yacup<br>
+                Finance Officer<br>
+                MORRISONS GLOBAL
+            </div>
+
+        </div>
+
+        <div class="signature-block">
+
+            <canvas id="investor-signature" class="signature-area"></canvas>
+
+            <div class="signature-line">
+                Investor Signature
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="section-title" style="margin-top:70px;">
+        Signed in the Presence of
+    </div>
+
+    <div class="grid-2">
+
+        <p>
+            ________________________<br>
+            Witness 1
+        </p>
+
+        <p>
+            ________________________<br>
+            Witness 2
+        </p>
+
+    </div>
+
+</div>
+
+<!-- PAGE 5 -->
+<div class="page">
+
+    <div class="logo-area">
+
+        <div class="document-title">
+            Acknowledgment
+        </div>
+
+        <div class="divider"></div>
+
+    </div>
+
+    <p>
+        Republic of the Philippines<br>
+        City of Taguig<br><br>
+
+        BEFORE ME, a Notary Public for and in the City of Taguig, personally appeared the following individuals who presented competent proof of identity:
+    </p>
+
+    <!-- RESPONSIVE TABLE -->
+    <div class="table-responsive">
+
+        <table class="custom-table">
+
+            <tr>
+                <th>Name</th>
+                <th>ID Type</th>
+                <th>ID Number</th>
+                <th>Date Issued</th>
+            </tr>
+
+            <tr>
+                <td>Jubert Undaya Yacup</td>
+
+                <td>
+                    <input type="text">
+                </td>
+
+                <td>
+                    <input type="text">
+                </td>
+
+                <td>
+                    <input type="text">
+                </td>
+            </tr>
+
+            <tr>
+
+                <td>
+                    <input type="text" placeholder="Investor Name">
+                </td>
+
+                <td>
+                    <input type="text">
+                </td>
+
+                <td>
+                    <input type="text">
+                </td>
+
+                <td>
+                    <input type="text">
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+    <p style="margin-top:30px;">
+        This Agreement consists of five (5) pages including this acknowledgment page, duly signed by the parties and their witnesses.
+    </p>
+
+    <div style="margin-top:70px;">
+
+        <p>
+            ___________________________<br>
+            Notary Public
+        </p>
+
+        <p style="margin-top:30px;">
+            Doc. No.
+            <input type="text" size="6"><br>
+
+            Page No.
+            <input type="text" size="6"><br>
+
+            Book No.
+            <input type="text" size="6"><br>
+
+            Series of 2026
+        </p>
+
+    </div>
+
+    <div class="footer-note">
+        MORRISONS GLOBAL • Official Investment Partnership Agreement
+    </div>
+
+</div>
+
+<script>
+
+const canvas = document.getElementById('investor-signature');
+
+const signaturePad = new SignaturePad(canvas,{
+    backgroundColor:'rgba(255,255,255,0)',
+    penColor:'#111'
+});
+
+/* =========================================
+   RESIZE SIGNATURE
+========================================= */
+
+function resizeCanvas(){
+
+    const ratio = Math.max(window.devicePixelRatio || 1,1);
+
+    canvas.width = canvas.offsetWidth * ratio;
+    canvas.height = canvas.offsetHeight * ratio;
+
+    canvas.getContext("2d").scale(ratio,ratio);
+
+    signaturePad.clear();
+}
+
+window.addEventListener("resize",resizeCanvas);
+
+resizeCanvas();
+
+/* =========================================
+   CLEAR SIGNATURE
+========================================= */
+
+function clearSignature(){
+    signaturePad.clear();
+}
+
+/* =========================================
+   SUBMIT CONTRACT
+========================================= */
+
+function submitContract(){
+
+    if(signaturePad.isEmpty()){
+
+        alert("Please provide your signature first.");
+        return;
+    }
+
+    const signatureData = signaturePad.toDataURL();
+
+    const contractData = {
+
+        investor_name:
+            document.querySelector('input[placeholder="Investor Full Name"]')?.value,
+
+        signature:
+            signatureData,
+
+        submitted_at:
+            new Date().toISOString()
+    };
+
+    console.log(contractData);
+
+    /*
+    ==========================================
+    CONNECT TO YOUR BACKEND HERE
+    ==========================================
+
+    fetch('/submit-contract', {
+
+        method:'POST',
+
+        headers:{
+            'Content-Type':'application/json'
+        },
+
+        body:JSON.stringify(contractData)
+    })
+    */
+
+    alert("Contract submitted successfully.");
+}
+
+</script>
+
+</body>
+</html>

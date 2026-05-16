@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contract;
 use App\Models\Purchase;
 use App\Models\User;
+use App\Services\ContractService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -104,6 +106,13 @@ class PurchaseController extends Controller
         $successMessage = $paymentMethod === 'bank_transfer'
             ? 'Bank transfer submitted. We will confirm once payment is received.'
             : 'Purchase completed successfully.';
+
+        if (! $user->contract()->exists()) {
+            return redirect()->route('contract.index', ['purchase_id' => $purchase->id])
+                ->with('success', 'Please complete your investment contract. A copy will be sent to your email.');
+        }
+
+        ContractService::sendPurchaseContract($user, $purchase, $user->contract);
 
         return back()->with([
             'success' => $successMessage,

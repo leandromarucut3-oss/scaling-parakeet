@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\WithdrawalApproved;
 use App\Models\User;
 use App\Models\WithdrawalRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
@@ -48,6 +50,15 @@ class WithdrawalManagementController extends Controller
 
         $withdrawal->status = 'approved';
         $withdrawal->save();
+
+        // send email notification to user
+        try {
+            if ($withdrawal->user && $withdrawal->user->email) {
+                Mail::to($withdrawal->user->email)->send(new WithdrawalApproved($withdrawal));
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send withdrawal approval email: '.$e->getMessage());
+        }
 
         return back();
     }
