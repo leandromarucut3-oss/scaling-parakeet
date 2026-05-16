@@ -1,0 +1,48 @@
+# Nginx Configuration Example for Laravel Security
+# Place this in your nginx server block configuration
+
+# Protect sensitive files from web access
+location ~ /\.env {
+    deny all;
+    access_log off;
+    log_not_found off;
+}
+
+# Protect hidden files and directories
+location ~ /\. {
+    deny all;
+    access_log off;
+    log_not_found off;
+}
+
+# Protect sensitive file extensions
+location ~ \.(env|json|lock|log)$ {
+    deny all;
+    access_log off;
+    log_not_found off;
+}
+
+# Deny access to composer files
+location ~ /(composer\.|package\.json|package-lock\.json) {
+    deny all;
+    access_log off;
+    log_not_found off;
+}
+
+# Standard Laravel rewrite rules
+location / {
+    try_files $uri $uri/ /index.php?$query_string;
+}
+
+location ~ \.php$ {
+    fastcgi_pass php-upstream;
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+    include fastcgi_params;
+}
+
+# Security headers
+add_header X-Content-Type-Options "nosniff" always;
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header X-XSS-Protection "1; mode=block" always;
+add_header Referrer-Policy "no-referrer-when-downgrade" always;
