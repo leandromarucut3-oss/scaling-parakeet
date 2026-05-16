@@ -154,7 +154,12 @@ const form = useForm({
     amount: '',
 });
 const showReceiptModal = ref(false);
-const receipt = computed(() => page.props.flash?.transfer_receipt ?? null);
+const receipt = computed(() => {
+    const flashData = page.props.flash?.transfer_receipt;
+    console.log('Flash data:', page.props.flash);
+    console.log('Receipt data:', flashData);
+    return flashData ?? null;
+});
 
 const currency = new Intl.NumberFormat('en-PH', {
     style: 'currency',
@@ -170,18 +175,36 @@ const formattedAmount = computed(() => {
 });
 
 const openReceiptModal = () => {
+    console.log('Opening receipt modal with data:', receipt.value);
     showReceiptModal.value = true;
 };
 
 watch(receipt, (value) => {
+    console.log('Receipt changed to:', value);
     if (value) {
-        openReceiptModal();
+        // Add a small delay to ensure component is fully mounted
+        setTimeout(() => {
+            openReceiptModal();
+        }, 100);
     }
-});
+}, { immediate: true });
+
+// Also watch page props directly to catch flash data
+watch(() => page.props.flash, (flashData) => {
+    console.log('Page props flash changed:', flashData);
+    if (flashData?.transfer_receipt) {
+        setTimeout(() => {
+            openReceiptModal();
+        }, 100);
+    }
+}, { deep: true });
 
 onMounted(() => {
+    console.log('Component mounted, receipt:', receipt.value);
     if (receipt.value) {
-        openReceiptModal();
+        setTimeout(() => {
+            openReceiptModal();
+        }, 100);
     }
 });
 

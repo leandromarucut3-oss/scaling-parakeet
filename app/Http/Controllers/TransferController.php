@@ -21,6 +21,11 @@ class TransferController extends Controller
         try {
             $sender = $request->user();
 
+            \Log::info('Transfer initiated', [
+                'sender_id' => $sender->id,
+                'timestamp' => now(),
+            ]);
+
             $data = $request->validate([
                 'recipient_email' => ['required', 'email', 'exists:users,email'],
                 'amount' => ['required', 'numeric', 'min:0.01'],
@@ -29,13 +34,27 @@ class TransferController extends Controller
             $recipient = User::where('email', $data['recipient_email'])->first();
             $amountCents = (int) round($data['amount'] * 100);
 
+            \Log::info('Transfer validation passed', [
+                'sender_id' => $sender->id,
+                'recipient_id' => $recipient->id,
+                'amount_cents' => $amountCents,
+            ]);
+
             if ($sender->id === $recipient->id) {
+                \Log::warning('Transfer rejected: self-transfer attempted', [
+                    'sender_id' => $sender->id,
+                ]);
                 throw ValidationException::withMessages([
                     'recipient_email' => 'You cannot transfer funds to yourself.',
                 ]);
             }
 
             if ($sender->balance_cents < $amountCents) {
+                \Log::warning('Transfer rejected: insufficient balance', [
+                    'sender_id' => $sender->id,
+                    'balance_cents' => $sender->balance_cents,
+                    'requested_amount' => $amountCents,
+                ]);
                 throw ValidationException::withMessages([
                     'amount' => 'Insufficient balance.',
                 ]);
@@ -85,12 +104,17 @@ class TransferController extends Controller
                 'transaction_date' => $receipt['transaction_date'],
             ]);
 
-            return redirect()->route('transfer.index')->with([
+            // Return response immediately with receipt in session flash
+            return back()->with([
                 'success' => 'Funds transferred successfully.',
                 'transfer_receipt' => $receipt,
             ]);
         } catch (\Exception $e) {
-            \Log::error('Transfer failed: ' . $e->getMessage());
+            \Log::error('Transfer failed with exception', [
+                'error' => $e->getMessage(),
+                'exception_type' => get_class($e),
+                'trace' => $e->getTraceAsString(),
+            ]);
             throw $e;
         }
     }
