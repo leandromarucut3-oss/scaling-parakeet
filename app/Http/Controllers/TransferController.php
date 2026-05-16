@@ -41,7 +41,10 @@ class TransferController extends Controller
                 ]);
             }
 
-            DB::transaction(function () use ($sender, $recipient, $amountCents) {
+            $receiptTransfer = null;
+            $now = now();
+
+            DB::transaction(function () use ($sender, $recipient, $amountCents, &$receiptTransfer, $now) {
                 $senderLocked = User::query()->whereKey($sender->id)->lockForUpdate()->first();
                 $recipientLocked = User::query()->whereKey($recipient->id)->lockForUpdate()->first();
 
@@ -51,7 +54,7 @@ class TransferController extends Controller
                 $senderLocked->save();
                 $recipientLocked->save();
 
-                Transfer::create([
+                $receiptTransfer = Transfer::create([
                     'sender_id' => $senderLocked->id,
                     'recipient_id' => $recipientLocked->id,
                     'amount_cents' => $amountCents,
@@ -59,7 +62,22 @@ class TransferController extends Controller
                 ]);
             });
 
-            return redirect()->route('transfer.index')->with('success', 'Funds transferred successfully.');
+            return redirect()->route('transfer.index')->with([
+                'success' => 'Funds transferred successfully.',
+                'transfer_receipt' => [
+                    'amount_cents' => $amountCents,
+                    'sender_name' => $sender->name,
+                    'sender_business' => 'Morrisons Commercial & General Merchandise Co.',
+                    'recipient_name' => $recipient->name ?: $recipient->email,
+                    'recipient_method' => 'Morrisons wallet',
+                    'reference_number' => sprintf('MRC-FT-%s-%s', $now->format('Ymd'), $receiptTransfer->id),
+                    'transaction_date' => $now->format('F j, Y • g:i A'),
+                    'destination_account' => $recipient->email,
+                    'processing_fee' => 0,
+                    'status' => 'Completed',
+                    'remarks' => 'Payment successfully transferred and verified through the Morrisons secure transaction system.',
+                ],
+            ]);
         } catch (\Exception $e) {
             \Log::error('Transfer failed: ' . $e->getMessage());
             throw $e;

@@ -65,16 +65,33 @@ const unavailablePaymentMessage = ref('');
 const bankOptions = [
     {
         key: 'bpi',
-        name: 'BPI',
+        name: 'BPI Savings',
+        accountName: 'Morrisons',
         image: '/BPI.jpg',
+        accountNumber: '4059053788',
+        qrData: 'BPI Savings Morrisons 4059053788',
     },
     {
         key: 'bdo',
-        name: 'BDO',
+        name: 'BDO Savings',
+        accountName: 'Morrisons',
         image: '/BDO.jpg',
+        accountNumber: '010306001276',
+        qrData: 'BDO Savings Morrisons 010306001276',
+    },
+    {
+        key: 'security',
+        name: 'Security Bank',
+        accountName: 'Morrisons',
+        image: '/security-bank-logo.png',
+        accountNumber: '0000081240668',
+        qrData: null,
+        noQr: true,
     },
 ];
 const selectedBankKey = ref(bankOptions[0]?.key ?? 'bpi');
+const showQrModal = ref(false);
+const copiedBankAccountKey = ref(null);
 
 const balanceCents = computed(() => page.props.auth?.user?.balance_cents ?? 0);
 const currency = new Intl.NumberFormat('en-US', {
@@ -221,6 +238,50 @@ const formatRate = (bps) => ((bps ?? 0) / 100).toFixed(2);
 const selectedBank = computed(() =>
     bankOptions.find((option) => option.key === selectedBankKey.value) ?? bankOptions[0]
 );
+const selectedBankQrUrl = computed(() => {
+    const bank = selectedBank.value;
+    return bank
+        ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(bank.qrData)}`
+        : '';
+});
+
+const selectBank = (option) => {
+    selectedBankKey.value = option.key;
+    form.bank_name = option.name;
+
+    if (option.noQr) {
+        openQrModal();
+    }
+};
+
+const openQrModal = () => {
+    showQrModal.value = true;
+    copiedBankAccountKey.value = null;
+};
+
+const closeQrModal = () => {
+    showQrModal.value = false;
+};
+
+const copyAccountNumber = async () => {
+    const accountNumber = selectedBank.value?.accountNumber;
+    if (!accountNumber) {
+        return;
+    }
+
+    try {
+        await navigator.clipboard.writeText(accountNumber);
+        copiedBankAccountKey.value = selectedBank.value.key;
+        setTimeout(() => {
+            if (copiedBankAccountKey.value === selectedBank.value.key) {
+                copiedBankAccountKey.value = null;
+            }
+        }, 2000);
+    } catch (error) {
+        copiedBankAccountKey.value = null;
+    }
+};
+
 const formatPaymentMethod = (method) => {
     if (method === 'account_balance') {
         return 'Account balance';
@@ -232,6 +293,47 @@ const formatPaymentMethod = (method) => {
 
     return method ?? 'Unknown';
 };
+
+const receiptReferenceNumber = computed(() => {
+    if (!receipt.value) {
+        return '';
+    }
+
+    const rawDate = receipt.value.created_at ? new Date(receipt.value.created_at) : null;
+    const dateString = rawDate && !Number.isNaN(rawDate.getTime())
+        ? rawDate.toISOString().slice(0, 10).replace(/-/g, '')
+        : receipt.value.created_at ?? '';
+
+    return `MRC-FT-${dateString}-${receipt.value.id}`;
+});
+
+const receiptTransactionDate = computed(() => {
+    if (!receipt.value?.created_at) {
+        return '';
+    }
+
+    const date = new Date(receipt.value.created_at);
+    if (Number.isNaN(date.getTime())) {
+        return receipt.value.created_at;
+    }
+
+    return new Intl.DateTimeFormat('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+    }).format(date);
+});
+
+const receiptDestinationAccount = computed(() => {
+    const account = selectedBank.value?.accountNumber ?? '';
+    if (account.length <= 4) {
+        return account;
+    }
+    return `**** **** ${account.slice(-4)}`;
+});
 </script>
 
 <template>
@@ -450,7 +552,7 @@ const formatPaymentMethod = (method) => {
                                         :class="selectedBankKey === option.key
                                             ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
                                             : 'border-emerald-100 text-emerald-700 hover:bg-emerald-50'"
-                                        @click="selectedBankKey = option.key; form.bank_name = option.name"
+                                        @click="selectBank(option)"
                                         :aria-pressed="selectedBankKey === option.key"
                                     >
                                         <img
@@ -466,7 +568,29 @@ const formatPaymentMethod = (method) => {
                                     :alt="selectedBank ? `${selectedBank.name} transfer details` : 'Bank transfer details'"
                                     class="mb-4 mt-4 w-full rounded-lg border border-emerald-100"
                                 />
-                                <div class="text-xs text-emerald-700">
+                                <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div class="flex flex-col gap-2">
+                                        <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Account holder</div>
+                                        <div class="text-sm font-semibold text-emerald-900">{{ selectedBank.accountName }}</div>
+                                    </div>
+                                    <div class="text-xs text-slate-500">
+                                        Selected account: {{ selectedBank.accountNumber }}
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <button
+                                        v-if="selectedBank.qrData"
+                                        type="button"
+                                        class="inline-flex items-center justify-center rounded-lg bg-emerald-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-emerald-900"
+                                        @click="openQrModal"
+                                    >
+                                        View QR code
+                                    </button>
+                                    <div v-else class="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
+                                        Security Bank uses account number only. Tap the account number in the modal to copy.
+                                    </div>
+                                </div>
+                                <div class="text-xs text-emerald-700 mt-3">
                                     Use the details above to complete your transfer, then enter the amount you paid.
                                 </div>
                                 <input
@@ -520,6 +644,68 @@ const formatPaymentMethod = (method) => {
                         type="button"
                         class="mt-5 w-full rounded-full border border-emerald-100 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-emerald-900"
                         @click="closeModal"
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showQrModal" class="fixed inset-0 z-50">
+            <div class="absolute inset-0 bg-slate-900/50" @click="closeQrModal"></div>
+            <div class="relative flex min-h-screen items-center justify-center px-4">
+                <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                    <div class="flex items-start justify-between">
+                        <div class="text-sm font-semibold text-emerald-900">
+                            {{ selectedBank.name }} payment details
+                        </div>
+                        <button
+                            type="button"
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-100 text-emerald-800 hover:bg-emerald-50"
+                            @click="closeQrModal"
+                            aria-label="Close"
+                        >
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-900">
+                        <div class="font-semibold">
+                            <span v-if="selectedBank.qrData">Scan the QR code with your bank app</span>
+                            <span v-else>Use the account number below</span>
+                        </div>
+                        <div v-if="selectedBank.qrData" class="mt-4 flex items-center justify-center">
+                            <img
+                                :src="selectedBankQrUrl"
+                                :alt="`QR code for ${selectedBank.name}`"
+                                class="h-64 w-64 rounded-2xl border border-emerald-100 bg-white object-contain"
+                            />
+                        </div>
+                        <div v-else class="mt-4 rounded-2xl border border-emerald-100 bg-white p-4 text-center text-sm text-slate-600">
+                            QR code is unavailable for this bank. Please copy the account number below instead.
+                        </div>
+                        <div class="mt-4 rounded-2xl border border-emerald-100 bg-white p-4">
+                            <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Account holder</div>
+                            <div class="mt-1 text-sm font-semibold text-emerald-900">{{ selectedBank.accountName }}</div>
+                            <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mt-3">Account number</div>
+                            <button
+                                type="button"
+                                class="mt-2 w-full rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-left text-sm text-emerald-900 hover:bg-emerald-100"
+                                @click="copyAccountNumber"
+                            >
+                                <div class="flex items-center justify-between gap-3">
+                                    <span>{{ selectedBank.accountNumber }}</span>
+                                    <span class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                                        {{ copiedBankAccountKey === selectedBank.key ? 'Copied' : 'Tap to copy' }}
+                                    </span>
+                                </div>
+                            </button>
+                            <div class="mt-2 text-xs text-slate-500">Click the account number to copy it automatically.</div>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        class="mt-5 w-full rounded-full border border-emerald-100 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-emerald-900 hover:bg-emerald-50"
+                        @click="closeQrModal"
                     >
                         Close
                     </button>
