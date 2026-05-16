@@ -72,8 +72,8 @@ class StatementController extends Controller
             ->map(function (Transfer $transfer) use ($user) {
                 $isSender = $transfer->sender_id === $user->id;
                 $counterparty = $isSender
-                    ? optional($transfer->recipient)->email
-                    : optional($transfer->sender)->email;
+                    ? optional($transfer->recipient)->name ?? optional($transfer->recipient)->email
+                    : optional($transfer->sender)->name ?? optional($transfer->sender)->email;
 
                 return [
                     'id' => $transfer->id,
