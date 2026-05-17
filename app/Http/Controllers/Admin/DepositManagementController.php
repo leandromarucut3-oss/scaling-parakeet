@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Purchase;
 use App\Models\User;
+use App\Services\ContractService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,7 @@ class DepositManagementController extends Controller
         $deposits = Purchase::query()
             ->with('user')
             ->where('payment_method', 'bank_transfer')
+            ->where('status', 'pending')
             ->orderByDesc('created_at')
             ->get()
             ->map(fn (Purchase $purchase) => [
@@ -43,6 +45,26 @@ class DepositManagementController extends Controller
         ]);
     }
 
+    public function reject(Purchase $purchase): RedirectResponse
+    {
+        if ($purchase->payment_method !== 'bank_transfer') {
+            throw ValidationException::withMessages([
+                'deposit' => 'Only bank transfer deposits can be rejected.',
+            ]);
+        }
+
+        if ($purchase->status !== 'pending') {
+            throw ValidationException::withMessages([
+                'deposit' => 'Deposit is already processed.',
+            ]);
+        }
+
+        $purchase->status = 'rejected';
+        $purchase->save();
+
+        return back();
+    }
+
     public function approve(Purchase $purchase): RedirectResponse
     {
         if ($purchase->payment_method !== 'bank_transfer') {
@@ -57,7 +79,11 @@ class DepositManagementController extends Controller
             ]);
         }
 
-        DB::transaction(function () use ($purchase): void {
+        $approveContract = null;
+        $approvedPurchase = null;
+        $approvedUser = null;
+
+        DB::transaction(function () use ($purchase, &$approveContract, &$approvedPurchase, &$approvedUser): void {
             $purchaseLocked = Purchase::query()->whereKey($purchase->id)->lockForUpdate()->first();
             if (! $purchaseLocked || $purchaseLocked->status !== 'pending') {
                 return;
@@ -87,7 +113,15 @@ class DepositManagementController extends Controller
             $purchaseLocked->referrer_id = $referrerId;
             $purchaseLocked->referral_commission_cents = $commissionCents;
             $purchaseLocked->save();
+
+            $approvedPurchase = $purchaseLocked;
+            $approvedUser = $userLocked;
+            $approveContract = $userLocked->contract;
         });
+
+        if ($approveContract && $approvedPurchase && $approvedUser) {
+            ContractService::sendPurchaseContract($approvedUser, $approvedPurchase, $approveContract);
+        }
 
         return back();
     }

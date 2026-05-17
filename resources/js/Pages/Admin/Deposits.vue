@@ -43,7 +43,13 @@ const formatDateTime = (value) => {
 };
 
 const submitDepositApproval = (id) => {
-    depositAction.post(route('admin.deposits.approve', id), {
+    depositAction.post(route('admin.deposits.approve', { purchase: id }), {
+        preserveScroll: true,
+    });
+};
+
+const submitDepositRejection = (id) => {
+    depositAction.post(route('admin.deposits.reject', { purchase: id }), {
         preserveScroll: true,
     });
 };
@@ -134,14 +140,24 @@ const copyAccount = async (id, accountNumber) => {
                                             {{ formatDateTime(deposit.created_at) }}
                                         </td>
                                         <td class="px-4 py-4 text-right">
-                                            <button
-                                                type="button"
-                                                class="rounded-full border border-emerald-200 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-emerald-900"
-                                                :disabled="depositAction.processing || deposit.status !== 'pending'"
-                                                @click="submitDepositApproval(deposit.id)"
-                                            >
-                                                Approve
-                                            </button>
+                                                    <div class="flex flex-wrap justify-end gap-2">
+                                                        <button
+                                                            type="button"
+                                                            class="rounded-full border border-emerald-200 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-emerald-900"
+                                                            :disabled="depositAction.processing || deposit.status !== 'pending'"
+                                                            @click="submitDepositApproval(deposit.id)"
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            class="rounded-full border border-rose-200 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-rose-700"
+                                                            :disabled="depositAction.processing || deposit.status !== 'pending'"
+                                                            @click="submitDepositRejection(deposit.id)"
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                    </div>
                                         </td>
                                     </tr>
                                     <tr v-if="!props.deposits.length">

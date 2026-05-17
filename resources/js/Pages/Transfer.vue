@@ -51,7 +51,7 @@
 
         <!-- Receipt Modal -->
         <div v-if="showReceiptModal && receipt" class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/50" @click.self="closeReceiptModal">
-            <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="flex items-center justify-center p-4">
                 <div class="relative w-full max-w-2xl">
                     <button
                         type="button"
@@ -62,12 +62,11 @@
                         ×
                     </button>
 
-                    <div class="receipt-container">
+                    <div class="receipt-container" ref="modalContainer">
                         <!-- Header -->
                         <div class="header">
                             <div class="brand">
                                 <h1>MORRISONS</h1>
-                                <p>Commercial & General Merchandise Co.</p>
                                 <div class="status-badge">
                                     ✓ Transfer Successfully Completed
                                 </div>
@@ -87,7 +86,6 @@
                                 <div class="detail-card">
                                     <div class="detail-label">Sender</div>
                                     <div class="detail-value">
-                                        {{ receipt.sender_business }}<br>
                                         {{ receipt.sender_name }}
                                     </div>
                                 </div>
@@ -95,8 +93,7 @@
                                 <div class="detail-card">
                                     <div class="detail-label">Recipient</div>
                                     <div class="detail-value">
-                                        {{ receipt.recipient_name }}<br>
-                                        {{ receipt.recipient_method }}
+                                        {{ receipt.recipient_name }}
                                     </div>
                                 </div>
                             </div>
@@ -119,7 +116,7 @@
 
                                 <div class="info-row">
                                     <div class="info-title">Processing Fee</div>
-                                    <div class="info-value">₱{{ receipt.processing_fee.toFixed(2) }}</div>
+                                    <div class="info-value">{{ currency.format(receipt.processing_fee) }}</div>
                                 </div>
 
                                 <div class="info-row">
@@ -139,12 +136,16 @@
                         <!-- Footer -->
                         <div class="footer">
                             <div class="footer-note">
-                                This electronic receipt serves as proof of transaction processed by Morrisons Commercial & General Merchandise Co. Please keep this copy for your records and future reference.
+                                This electronic receipt serves as proof of transaction. Please keep this copy for your records and future reference.
                             </div>
 
                             <div class="security">
                                 <div class="dot"></div>
                                 Secured & Encrypted Transaction
+                            </div>
+
+                            <div class="mt-4 flex justify-end">
+                                <PrimaryButton type="button" @click="closeReceiptModal">Close</PrimaryButton>
                             </div>
                         </div>
                     </div>
@@ -361,6 +362,29 @@
     .info-value {
         text-align: left;
     }
+
+    .receipt-container {
+        width: calc(100vw - 24px);
+        max-height: calc(100vh - 24px);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .brand h1 {
+        font-size: 18px;
+    }
+
+    .amount {
+        font-size: 28px;
+    }
+
+    .detail-value {
+        font-size: 14px;
+    }
+
+    .section-title {
+        font-size: 11px;
+    }
 }
 
 .mt-8 {
@@ -375,7 +399,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { useForm, usePage } from '@inertiajs/vue3';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 
 const page = usePage();
 const form = useForm({
@@ -383,6 +407,7 @@ const form = useForm({
     amount: '',
 });
 const showReceiptModal = ref(false);
+const modalContainer = ref(null);
 const receipt = computed(() => {
     const flashData = page.props.flash?.transfer_receipt;
     console.log('Flash data:', page.props.flash);
@@ -390,9 +415,9 @@ const receipt = computed(() => {
     return flashData ?? null;
 });
 
-const currency = new Intl.NumberFormat('en-PH', {
+const currency = new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'PHP',
+    currency: 'USD',
     maximumFractionDigits: 2,
 });
 
@@ -406,6 +431,16 @@ const formattedAmount = computed(() => {
 const openReceiptModal = () => {
     console.log('Opening receipt modal with data:', receipt.value);
     showReceiptModal.value = true;
+};
+
+const onDocumentClick = (e) => {
+    if (!showReceiptModal.value) return;
+    const container = modalContainer.value;
+    if (!container) return;
+    const target = e.target;
+    if (target instanceof Node && !container.contains(target)) {
+        closeReceiptModal();
+    }
 };
 
 watch(receipt, (value) => {
@@ -433,6 +468,11 @@ onMounted(() => {
             openReceiptModal();
         }, 100);
     }
+    document.addEventListener('click', onDocumentClick);
+});
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', onDocumentClick);
 });
 
 const maskDestinationAccount = (account) => {

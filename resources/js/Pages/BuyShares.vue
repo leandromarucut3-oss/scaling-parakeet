@@ -67,7 +67,8 @@ const bankOptions = [
         key: 'bpi',
         name: 'BPI Savings',
         accountName: 'Morrisons',
-        image: '/BPI.jpg',
+        logo: '/Bank-of-the-Philippine-Islands-BPI-Fintech-FInance-News-113x88.jpg',
+        detailsImage: '/BPI.jpg',
         accountNumber: '4059053788',
         qrData: 'BPI Savings Morrisons 4059053788',
     },
@@ -75,7 +76,8 @@ const bankOptions = [
         key: 'bdo',
         name: 'BDO Savings',
         accountName: 'Morrisons',
-        image: '/BDO.jpg',
+        logo: '/MOBILE BANNER_560_x_560_px_BDO.jpg',
+        detailsImage: '/BDO.jpg',
         accountNumber: '010306001276',
         qrData: 'BDO Savings Morrisons 010306001276',
     },
@@ -83,7 +85,8 @@ const bankOptions = [
         key: 'security',
         name: 'Security Bank',
         accountName: 'Morrisons',
-        image: '/security-bank-logo.png',
+        logo: '/unnamed.png',
+        detailsImage: '/unnamed.png',
         accountNumber: '0000081240668',
         qrData: null,
         noQr: true,
@@ -570,53 +573,16 @@ const receiptDestinationAccount = computed(() => {
                                         :aria-pressed="selectedBankKey === option.key"
                                     >
                                         <img
-                                            :src="option.image"
+                                            :src="option.logo"
                                             :alt="`${option.name} logo`"
                                             class="h-8 w-12 rounded-md border border-emerald-100 bg-white object-contain"
                                         />
                                         <span>{{ option.name }}</span>
                                     </button>
                                 </div>
-                                <img
-                                    :src="selectedBank?.image"
-                                    :alt="selectedBank ? `${selectedBank.name} transfer details` : 'Bank transfer details'"
-                                    class="mb-4 mt-4 w-full rounded-lg border border-emerald-100"
-                                />
-                                <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                    <div class="flex flex-col gap-2">
-                                        <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Account holder</div>
-                                        <div class="text-sm font-semibold text-emerald-900">{{ selectedBank.accountName }}</div>
-                                    </div>
-                                    <div class="text-xs text-slate-500">
-                                        Selected account: {{ selectedBank.accountNumber }}
-                                    </div>
-                                </div>
-                                <div class="text-xs text-emerald-700 mt-4">
+                                <div class="mt-4 text-xs text-emerald-700">
                                     Select a bank option above to view the payment details in a separate modal.
                                 </div>
-                                <div class="text-xs text-emerald-700 mt-3">
-                                    Use the details above to complete your transfer, then enter the amount you paid.
-                                </div>
-                                <input
-                                    v-model="form.amount"
-                                    type="number"
-                                    step="0.01"
-                                    :min="selectedPlan.minAmount"
-                                    :max="selectedPlan.maxAmount"
-                                    class="mt-3 w-full rounded-lg border border-emerald-100 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                                    placeholder="Enter amount"
-                                />
-                                <div v-if="form.errors.amount" class="mt-2 text-xs text-rose-600">
-                                    {{ form.errors.amount }}
-                                </div>
-                                <button
-                                    type="button"
-                                    class="mt-4 w-full rounded-lg bg-emerald-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-emerald-900"
-                                    :disabled="form.processing"
-                                    @click="submitBankTransferPurchase"
-                                >
-                                    Submit transfer
-                                </button>
                             </div>
                         </div>
                         <button
@@ -679,7 +645,7 @@ const receiptDestinationAccount = computed(() => {
                         </div>
                         <div v-if="selectedBank.key !== 'security'" class="mt-4 flex items-center justify-center">
                             <img
-                                :src="selectedBank.image"
+                                :src="selectedBank.detailsImage"
                                 :alt="`Bank details for ${selectedBank.name}`"
                                 class="rounded-2xl border border-emerald-100 bg-white object-contain max-h-[60vh] max-w-full"
                             />
@@ -705,6 +671,28 @@ const receiptDestinationAccount = computed(() => {
                             <div class="mt-1 text-sm font-semibold text-emerald-900">{{ selectedBank.accountName }}</div>
                             <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mt-3">Account number</div>
                             <div class="mt-1 text-sm text-emerald-900">{{ selectedBank.accountNumber }}</div>
+                        </div>
+                        <div class="mt-4">
+                            <input
+                                v-model="form.amount"
+                                type="number"
+                                step="0.01"
+                                :min="selectedPlan.minAmount"
+                                :max="selectedPlan.maxAmount"
+                                class="mt-3 w-full rounded-lg border border-emerald-100 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
+                                placeholder="Enter amount"
+                            />
+                            <div v-if="form.errors.amount" class="mt-2 text-xs text-rose-600">
+                                {{ form.errors.amount }}
+                            </div>
+                            <button
+                                type="button"
+                                class="mt-4 w-full rounded-lg bg-emerald-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-emerald-900"
+                                :disabled="form.processing"
+                                @click="submitBankTransferPurchase"
+                            >
+                                Submit transfer
+                            </button>
                         </div>
                     </div>
                     <button

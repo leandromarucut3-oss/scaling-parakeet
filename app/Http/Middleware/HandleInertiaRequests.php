@@ -43,18 +43,22 @@ class HandleInertiaRequests extends Middleware
         if ($user) {
             $totalInvestmentCents = (int) Purchase::query()
                 ->where('user_id', $user->id)
+                ->where('status', 'completed')
                 ->sum('amount_cents');
 
             $referralCommissionCents = (int) Purchase::query()
                 ->where('referrer_id', $user->id)
+                ->where('status', 'completed')
                 ->sum('referral_commission_cents');
 
             $interestEarnedCents = (int) Purchase::query()
                 ->where('user_id', $user->id)
+                ->where('status', 'completed')
                 ->sum('interest_earned_cents');
 
             $dailyInterestCents = (int) Purchase::query()
                 ->where('user_id', $user->id)
+                ->where('status', 'completed')
                 ->whereDate('last_interest_at', now()->toDateString())
                 ->get(['amount_cents', 'daily_interest_bps'])
                 ->sum(function (Purchase $purchase) {

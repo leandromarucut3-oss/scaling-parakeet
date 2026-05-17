@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\WithdrawalRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
@@ -91,11 +92,101 @@ class UserManagementController extends Controller
 
         return Inertia::render('Admin/Dashboard', [
             'users' => $users,
-            'adminBalanceCents' => $admin?->balance_cents ?? 0,
-            'withdrawals' => $withdrawals,
-            'recentTransactions' => $recentTransactions,
             'appUrl' => config('app.url'),
         ]);
+    }
+
+    public function sendFunds(Request $request)
+    {
+        return Inertia::render('Admin/SendFunds', [
+            'users' => $this->getUsersList(),
+        ]);
+    }
+
+    public function sendPackage(Request $request)
+    {
+        return Inertia::render('Admin/SendPackage', [
+            'users' => $this->getUsersList(),
+        ]);
+    }
+
+    public function recentTransactions(Request $request)
+    {
+        return Inertia::render('Admin/RecentTransactions', [
+            'recentTransactions' => $this->getRecentTransactions(),
+        ]);
+    }
+
+    private function getUsersList()
+    {
+        return User::query()
+            ->with('referrer')
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn (User $user) => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'referral_code' => $user->referral_code,
+                'created_at' => optional($user->created_at)->toDateString(),
+                'is_new' => $user->created_at && $user->created_at->greaterThan(now()->subDay()),
+                'roles' => $user->getRoleNames(),
+                'balance_cents' => $user->balance_cents,
+                'referrer' => $user->referrer ? [
+                    'id' => $user->referrer->id,
+                    'name' => $user->referrer->name,
+                    'email' => $user->referrer->email,
+                ] : null,
+            ]);
+    }
+
+    private function getRecentTransactions()
+    {
+        $purchases = Purchase::query()
+            ->with('user')
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get()
+            ->map(fn (Purchase $purchase) => [
+                'id' => $purchase->id,
+                'user' => [
+                    'id' => $purchase->user?->id,
+                    'name' => $purchase->user?->name,
+                    'email' => $purchase->user?->email,
+                ],
+                'amount_cents' => $purchase->amount_cents,
+                'status' => $purchase->status,
+                'created_at' => optional($purchase->created_at)->toDateTimeString(),
+                'type' => 'purchase',
+                'description' => $purchase->plan_name ? "Package: {$purchase->plan_name}" : 'Package purchase',
+                'is_new' => $purchase->status === 'pending',
+            ]);
+
+        $withdrawals = WithdrawalRequest::query()
+            ->with('user')
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get()
+            ->map(fn (WithdrawalRequest $withdrawal) => [
+                'id' => $withdrawal->id,
+                'user' => [
+                    'id' => $withdrawal->user?->id,
+                    'name' => $withdrawal->user?->name,
+                    'email' => $withdrawal->user?->email,
+                ],
+                'amount_cents' => $withdrawal->amount_cents,
+                'status' => $withdrawal->status,
+                'created_at' => optional($withdrawal->created_at)->toDateTimeString(),
+                'type' => 'withdrawal',
+                'description' => 'Withdrawal request',
+                'is_new' => false,
+            ]);
+
+        return $purchases
+            ->concat($withdrawals)
+            ->sortByDesc('created_at')
+            ->values()
+            ->take(50);
     }
 
     public function transfer(Request $request, User $user)
@@ -104,6 +195,12 @@ class UserManagementController extends Controller
 
         $data = $request->validate([
             'amount' => ['required', 'numeric', 'min:0.01'],
+        ]);
+
+        Log::info('Admin transfer requested', [
+            'admin_id' => $admin->id,
+            'recipient_id' => $user->id,
+            'amount' => $data['amount'],
         ]);
 
         $amountCents = (int) round($data['amount'] * 100);
@@ -131,7 +228,13 @@ class UserManagementController extends Controller
             $recipientLocked->save();
         });
 
-        return back();
+        Log::info('Admin transfer completed', [
+            'admin_id' => $admin->id,
+            'recipient_id' => $user->id,
+            'amount_cents' => $amountCents,
+        ]);
+
+        return back()->with('success', 'Funds transferred successfully.');
     }
 
     public function grantPackage(Request $request, User $user)

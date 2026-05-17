@@ -55,8 +55,9 @@ class PurchaseController extends Controller
         $user = $request->user();
 
         $purchase = null;
+        $now = now();
 
-        DB::transaction(function () use ($user, $amountCents, $plan, $data, $paymentMethod, $bankName, &$purchase): void {
+        DB::transaction(function () use ($user, $amountCents, $plan, $data, $paymentMethod, $bankName, &$purchase, $now): void {
             $userLocked = User::query()->whereKey($user->id)->lockForUpdate()->first();
             $referrerId = null;
             $commissionCents = 0;
@@ -103,29 +104,62 @@ class PurchaseController extends Controller
             ]);
         });
 
+        \Log::info('Package purchase completed', [
+            'purchase_id' => $purchase->id,
+            'user_id' => $user->id,
+            'plan_name' => $purchase->plan_name,
+            'amount_cents' => $purchase->amount_cents,
+            'payment_method' => $purchase->payment_method,
+            'status' => $purchase->status,
+            'daily_interest_bps' => $purchase->daily_interest_bps,
+            'duration_days' => $purchase->duration_days,
+        ]);
+
         $successMessage = $paymentMethod === 'bank_transfer'
             ? 'Bank transfer submitted. We will confirm once payment is received.'
             : 'Purchase completed successfully.';
 
-        if (! $user->contract()->exists()) {
-            return redirect()->route('contract.index', ['purchase_id' => $purchase->id])
-                ->with('success', 'Please complete your investment contract. A copy will be sent to your email.');
-        }
+        // Generate professional receipt
+        $dailyInterestPercent = ($purchase->daily_interest_bps / 10000) * 100;
+        $totalInterestEstimate = (int) round($purchase->amount_cents * ($dailyInterestPercent / 100) * $purchase->duration_days);
+        
+        $receipt = [
+            'id' => $purchase->id,
+            'reference_number' => sprintf('MRC-PKG-%s-%s', $now->format('Ymd'), $purchase->id),
+            'plan_name' => $purchase->plan_name,
+            'amount_cents' => $purchase->amount_cents,
+            'daily_interest_bps' => $purchase->daily_interest_bps,
+            'daily_interest_percent' => $dailyInterestPercent,
+            'duration_days' => $purchase->duration_days,
+            'estimated_interest_cents' => $totalInterestEstimate,
+            'payment_method' => $paymentMethod === 'account_balance' ? 'Morrisons Account Balance' : 'Bank Transfer',
+            'bank_name' => $bankName,
+            'status' => ucfirst($purchase->status),
+            'status_badge' => $purchase->status === 'completed' 
+                ? '✓ Purchase Successfully Completed' 
+                : '⏳ Bank Transfer Pending Confirmation',
+            'transaction_date' => $now->format('F j, Y • g:i A'),
+            'investor_name' => $user->name,
+            'remarks' => $purchase->status === 'completed'
+                ? 'Investment successfully processed and verified through the Morrisons secure transaction system. Your investment will begin accruing interest immediately.'
+                : 'Bank transfer has been submitted for processing. Your investment will begin accruing interest once payment is confirmed by our banking partners.',
+        ];
 
-        ContractService::sendPurchaseContract($user, $purchase, $user->contract);
+        if ($purchase->status === 'completed') {
+            if (! $user->contract()->exists()) {
+                return redirect()->route('contract.index', ['purchase_id' => $purchase->id])
+                    ->with([
+                        'success' => 'Please complete your investment contract. A copy will be sent to your email.',
+                        'purchase_receipt' => $receipt,
+                    ]);
+            }
+
+            ContractService::sendPurchaseContract($user, $purchase, $user->contract);
+        }
 
         return back()->with([
             'success' => $successMessage,
-            'purchase_receipt' => $purchase ? [
-                'id' => $purchase->id,
-                'plan_name' => $purchase->plan_name,
-                'amount_cents' => $purchase->amount_cents,
-                'daily_interest_bps' => $purchase->daily_interest_bps,
-                'duration_days' => $purchase->duration_days,
-                'payment_method' => $purchase->payment_method,
-                'status' => $purchase->status,
-                'created_at' => optional($purchase->created_at)->toDateTimeString(),
-            ] : null,
+            'purchase_receipt' => $receipt,
         ]);
     }
 

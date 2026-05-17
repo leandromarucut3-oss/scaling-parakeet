@@ -71,7 +71,7 @@ const submitFranchiseApplication = () => {
 
 <template>
     <div>
-        <div class="min-h-screen bg-[#f4f6f4]">
+        <div :class="['min-h-screen bg-[#f4f6f4]', isAdmin ? 'ml-72' : '']">
             <nav class="relative overflow-hidden bg-emerald-800 border-b border-emerald-900/20">
                 <div class="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-emerald-900/40"></div>
                 <div class="pointer-events-none absolute right-10 top-6 h-28 w-40 -rotate-12 rounded-full bg-emerald-900/45"></div>
@@ -137,9 +137,8 @@ const submitFranchiseApplication = () => {
         </div>
     </div>
 
-    <div v-if="showSidebar" class="fixed inset-0 z-50">
-        <div class="absolute inset-0 bg-slate-900/40" @click="showSidebar = false"></div>
-        <aside class="relative flex h-full w-72 flex-col bg-white shadow-2xl">
+        <!-- Permanent admin sidebar (fixed) -->
+        <aside v-if="isAdmin" class="fixed left-0 top-0 z-40 h-screen w-72 flex-col bg-white shadow-2xl">
             <div class="flex items-center justify-between border-b border-emerald-100 px-6 py-4">
                 <div class="flex items-center gap-3">
                     <div class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
@@ -153,17 +152,10 @@ const submitFranchiseApplication = () => {
                         <div class="text-xs text-emerald-700/80">{{ $page.props.auth.user.email }}</div>
                     </div>
                 </div>
-                <button
-                    type="button"
-                    class="text-xs font-semibold uppercase tracking-widest text-emerald-700"
-                    @click="showSidebar = false"
-                >
-                    Close
-                </button>
             </div>
             <div class="flex-1 space-y-2 px-4 py-4">
                 <Link
-                    :href="route('dashboard')"
+                    :href="isAdmin ? route('admin.dashboard') : route('dashboard')"
                     class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
                     @click="showSidebar = false"
                 >
@@ -171,6 +163,7 @@ const submitFranchiseApplication = () => {
                     <span class="text-xs text-emerald-700">Go</span>
                 </Link>
                 <Link
+                    v-if="!isAdmin"
                     :href="route('profile.edit')"
                     class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
                     @click="showSidebar = false"
@@ -179,6 +172,7 @@ const submitFranchiseApplication = () => {
                     <span class="text-xs text-emerald-700">Go</span>
                 </Link>
                 <Link
+                    v-if="!isAdmin"
                     :href="route('invites')"
                     class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
                     @click="showSidebar = false"
@@ -202,7 +196,144 @@ const submitFranchiseApplication = () => {
                     <span>Withdrawal</span>
                     <span class="text-xs text-emerald-700">Go</span>
                 </Link>
+                <Link
+                    v-if="isAdmin"
+                    :href="route('admin.send-funds')"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                    @click="showSidebar = false"
+                >
+                    <span>Send funds</span>
+                    <span class="text-xs text-emerald-700">Go</span>
+                </Link>
+                <Link
+                    v-if="isAdmin"
+                    :href="route('admin.send-package')"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                    @click="showSidebar = false"
+                >
+                    <span>Send package</span>
+                    <span class="text-xs text-emerald-700">Go</span>
+                </Link>
+                <Link
+                    v-if="isAdmin"
+                    :href="route('admin.recent-transactions')"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                    @click="showSidebar = false"
+                >
+                    <span>Recent transactions</span>
+                    <span class="text-xs text-emerald-700">Go</span>
+                </Link>
+            </div>
+            <div class="border-t border-emerald-100 px-4 py-4 space-y-3">
+                <Link
+                    :href="route('logout')"
+                    method="post"
+                    as="button"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                >
+                    <span>Log out</span>
+                    <span class="text-xs text-emerald-700">Exit</span>
+                </Link>
+            </div>
+        </aside>
+
+        <!-- Modal sidebar for non-admin (mobile/overlay) -->
+        <div v-if="showSidebar && !isAdmin" class="fixed inset-0 z-50">
+            <div class="absolute inset-0 bg-slate-900/40" @click="showSidebar = false"></div>
+            <aside class="relative flex h-full w-72 flex-col bg-white shadow-2xl">
+            <div class="flex items-center justify-between border-b border-emerald-100 px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 21a8 8 0 10-16 0" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-sm font-semibold text-emerald-900">{{ $page.props.auth.user.name }}</div>
+                        <div class="text-xs text-emerald-700/80">{{ $page.props.auth.user.email }}</div>
+                    </div>
+                </div>
                 <button
+                    type="button"
+                    class="text-xs font-semibold uppercase tracking-widest text-emerald-700"
+                    @click="showSidebar = false"
+                >
+                    Close
+                </button>
+            </div>
+            <div class="flex-1 space-y-2 px-4 py-4">
+                <Link
+                    :href="isAdmin ? route('admin.dashboard') : route('dashboard')"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                    @click="showSidebar = false"
+                >
+                    <span>Dashboard</span>
+                    <span class="text-xs text-emerald-700">Go</span>
+                </Link>
+                <Link
+                    v-if="!isAdmin"
+                    :href="route('profile.edit')"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                    @click="showSidebar = false"
+                >
+                    <span>Profile</span>
+                    <span class="text-xs text-emerald-700">Go</span>
+                </Link>
+                <Link
+                    v-if="!isAdmin"
+                    :href="route('invites')"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                    @click="showSidebar = false"
+                >
+                    <span>Associates</span>
+                    <span class="text-xs text-emerald-700">Go</span>
+                </Link>
+                <Link
+                    :href="isAdmin ? route('admin.deposits') : route('shares.buy')"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                    @click="showSidebar = false"
+                >
+                    <span>Deposits</span>
+                    <span class="text-xs text-emerald-700">Go</span>
+                </Link>
+                <Link
+                    :href="isAdmin ? route('admin.withdrawals') : route('dashboard')"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                    @click="showSidebar = false"
+                >
+                    <span>Withdrawal</span>
+                    <span class="text-xs text-emerald-700">Go</span>
+                </Link>
+                <Link
+                    v-if="isAdmin"
+                    :href="route('admin.send-funds')"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                    @click="showSidebar = false"
+                >
+                    <span>Send funds</span>
+                    <span class="text-xs text-emerald-700">Go</span>
+                </Link>
+                <Link
+                    v-if="isAdmin"
+                    :href="route('admin.send-package')"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                    @click="showSidebar = false"
+                >
+                    <span>Send package</span>
+                    <span class="text-xs text-emerald-700">Go</span>
+                </Link>
+                <Link
+                    v-if="isAdmin"
+                    :href="route('admin.recent-transactions')"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                    @click="showSidebar = false"
+                >
+                    <span>Recent transactions</span>
+                    <span class="text-xs text-emerald-700">Go</span>
+                </Link>
+                <button
+                    v-if="!isAdmin"
                     type="button"
                     class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
                     @click="showSidebar = false; showFranchiseModal = true"
@@ -212,7 +343,7 @@ const submitFranchiseApplication = () => {
                 </button>
             </div>
             <div class="border-t border-emerald-100 px-4 py-4 space-y-3">
-                <div class="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3">
+                <div v-if="!isAdmin" class="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3">
                     <div class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Referral link</div>
                     <div class="mt-2 grid gap-1 text-[11px] text-emerald-900">
                         <div>

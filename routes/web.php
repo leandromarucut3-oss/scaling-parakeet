@@ -68,8 +68,19 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/deposits', [DepositManagementController::class, 'index'])
             ->name('deposits');
 
+        Route::get('/send-funds', [UserManagementController::class, 'sendFunds'])
+            ->name('send-funds');
+
+        Route::get('/send-package', [UserManagementController::class, 'sendPackage'])
+            ->name('send-package');
+
+        Route::get('/recent-transactions', [UserManagementController::class, 'recentTransactions'])
+            ->name('recent-transactions');
+
         Route::post('/deposits/{purchase}/approve', [DepositManagementController::class, 'approve'])
             ->name('deposits.approve');
+        Route::post('/deposits/{purchase}/reject', [DepositManagementController::class, 'reject'])
+            ->name('deposits.reject');
 
         Route::post('/users/{user}/transfer', [UserManagementController::class, 'transfer'])
             ->name('users.transfer');

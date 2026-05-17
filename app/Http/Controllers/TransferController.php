@@ -83,10 +83,8 @@ class TransferController extends Controller
 
             $receipt = [
                 'amount_cents' => $amountCents,
-                'sender_name' => $sender->name,
-                'sender_business' => 'Morrisons Commercial & General Merchandise Co.',
-                'recipient_name' => $recipient->name ?: $recipient->email,
-                'recipient_method' => 'Morrisons wallet',
+                'sender_name' => trim((string) $sender->name) ?: 'Unnamed User',
+                'recipient_name' => trim((string) $recipient->name) ?: 'Unnamed User',
                 'reference_number' => sprintf('MRC-FT-%s-%s', $now->format('Ymd'), $receiptTransfer->id),
                 'transaction_date' => $now->format('F j, Y • g:i A'),
                 'destination_account' => $recipient->email,

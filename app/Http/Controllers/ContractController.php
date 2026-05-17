@@ -63,7 +63,7 @@ class ContractController extends Controller
                 ->where('user_id', $user->id)
                 ->first();
 
-            if ($purchase) {
+            if ($purchase && $purchase->status === 'completed') {
                 ContractService::sendPurchaseContract($user, $purchase, $contract);
             }
         }
