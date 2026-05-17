@@ -93,6 +93,7 @@ const submitFranchiseApplication = () => {
                             <!-- Logo -->
                             <div class="shrink-0 flex items-center gap-3">
                                 <button
+                                    v-if="!isAdmin"
                                     type="button"
                                     class="flex items-center gap-3 rounded-full border border-emerald-700/40 bg-emerald-900/20 px-4 py-2 text-emerald-50 transition hover:bg-emerald-900/30"
                                     @click="showSidebar = true"
@@ -105,6 +106,14 @@ const submitFranchiseApplication = () => {
                                     </span>
                                     <span class="text-xs font-semibold uppercase tracking-[0.2em]">Menu</span>
                                 </button>
+                                <a
+                                    v-else
+                                    :href="route('admin.backup.download')"
+                                    class="rounded-full border border-emerald-700/40 bg-emerald-900/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-50 transition hover:bg-emerald-900/30"
+                                    aria-label="Run manual backup"
+                                >
+                                    Backup
+                                </a>
                             </div>
 
                             <!-- Navigation Links -->

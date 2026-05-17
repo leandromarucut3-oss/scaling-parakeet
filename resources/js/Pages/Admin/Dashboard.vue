@@ -52,6 +52,14 @@ const filteredUsers = computed(() => {
 
 const formatCurrency = (cents) => currency.format((cents ?? 0) / 100);
 
+const referralUrl = (referralCode) => {
+    if (!referralCode) {
+        return '';
+    }
+
+    return `${props.appUrl.replace(/\/$/, '')}/register/${encodeURIComponent(referralCode)}`;
+};
+
 const formatDate = (value) => {
     if (!value) {
         return '—';
@@ -108,7 +116,17 @@ const formatDate = (value) => {
                                     >
                                         <td class="px-4 py-4">
                                             <div class="font-semibold text-emerald-950">{{ user.name }}</div>
-                                            <div class="text-xs text-slate-500">{{ user.email }}</div>
+                                        <div v-if="user.referral_code" class="mt-1 text-xs text-emerald-700 break-words">
+                                            <a
+                                                :href="referralUrl(user.referral_code)"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="hover:text-emerald-900"
+                                            >
+                                                {{ referralUrl(user.referral_code) }}
+                                            </a>
+                                        </div>
+                                        <div class="mt-1 text-xs text-slate-500">{{ user.email }}</div>
                                         </td>
                                         <td class="px-4 py-4 text-xs text-emerald-800">
                                             <span v-if="user.roles?.length" class="rounded-full bg-emerald-100 px-3 py-1">
