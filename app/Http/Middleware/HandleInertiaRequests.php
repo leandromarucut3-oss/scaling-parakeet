@@ -223,6 +223,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'purchase_receipt' => $request->session()->get('purchase_receipt'),
                 'withdrawal_success' => $request->session()->get('withdrawal_success'),
+                'transfer_receipt' => $request->session()->get('transfer_receipt'),
             ],
         ];
     }
