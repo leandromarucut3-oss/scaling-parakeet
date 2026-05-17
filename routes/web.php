@@ -91,6 +91,15 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::get('/backup', [BackupController::class, 'download'])
             ->name('backup.download');
+
+        /*
+        |--------------------------------------------------------------------------
+        | AUTOMATED LIVE DEPLOYMENT ROUTE
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/deploy-live-server', [BackupController::class, 'runDeployment'])
+            ->name('system.deploy');
     });
 
 

@@ -10,7 +10,7 @@
         "guzzlehttp/guzzle": "^7.2",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^10.10",
-        "laravel/sanctum": "^3.3",
+        "laravel/sanctum": "^3.3.3",
         "laravel/tinker": "^2.8",
         "spatie/laravel-backup": "^9.3",
         "spatie/laravel-permission": "^6.24",
@@ -41,7 +41,11 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan migrate --force",
+            "@php artisan config:cache",
+            "@php artisan route:cache",
+            "@php artisan view:cache"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
