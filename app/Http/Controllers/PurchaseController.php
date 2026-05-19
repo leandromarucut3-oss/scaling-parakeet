@@ -85,6 +85,8 @@ class PurchaseController extends Controller
                         }
                     }
                 }
+            } elseif ($paymentMethod === 'bank_transfer' && $userLocked->referrer_id && $userLocked->referrer_id !== $userLocked->id) {
+                $referrerId = $userLocked->referrer_id;
             }
 
             $purchase = Purchase::create([

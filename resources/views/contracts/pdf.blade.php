@@ -156,7 +156,7 @@ P
 <span class="fillable">{{ number_format($purchase->daily_interest_bps / 100, 2) }}%</span></p>
 
 <p>Commencement Date:
-<span class="fillable">{{ now()->format('F j, Y') }}</span></p>
+<span class="fillable">{{ optional($contract->signed_at)->format('F j, Y') ?? now()->format('F j, Y') }}</span></p>
 </div>
 
 <div class="section">

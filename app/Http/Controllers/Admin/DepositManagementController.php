@@ -97,8 +97,9 @@ class DepositManagementController extends Controller
             $referrerId = $purchaseLocked->referrer_id;
             $commissionCents = $purchaseLocked->referral_commission_cents;
 
-            if (! $referrerId && $commissionCents === 0 && $userLocked->referrer_id && $userLocked->referrer_id !== $userLocked->id) {
-                $referrerLocked = User::query()->whereKey($userLocked->referrer_id)->lockForUpdate()->first();
+            if ($commissionCents === 0 && $userLocked->referrer_id && $userLocked->referrer_id !== $userLocked->id) {
+                $referrerId = $referrerId ?: $userLocked->referrer_id;
+                $referrerLocked = User::query()->whereKey($referrerId)->lockForUpdate()->first();
                 if ($referrerLocked) {
                     $commissionCents = (int) round($purchaseLocked->amount_cents * 0.05);
                     if ($commissionCents > 0) {

@@ -194,7 +194,15 @@ const submitFranchiseApplication = () => {
                     class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
                     @click="showSidebar = false"
                 >
-                    <span>Deposits</span>
+                    <span class="flex items-center gap-2">
+                        <span>Deposits</span>
+                        <span
+                            v-if="isAdmin && pendingDeposits > 0"
+                            class="inline-flex items-center rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-white"
+                        >
+                            {{ pendingDeposits }}
+                        </span>
+                    </span>
                     <span class="text-xs text-emerald-700">Go</span>
                 </Link>
                 <Link
@@ -202,7 +210,15 @@ const submitFranchiseApplication = () => {
                     class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
                     @click="showSidebar = false"
                 >
-                    <span>Withdrawal</span>
+                    <span class="flex items-center gap-2">
+                        <span>Withdrawal</span>
+                        <span
+                            v-if="isAdmin && pendingWithdrawals > 0"
+                            class="inline-flex items-center rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-white"
+                        >
+                            {{ pendingWithdrawals }}
+                        </span>
+                    </span>
                     <span class="text-xs text-emerald-700">Go</span>
                 </Link>
                 <Link

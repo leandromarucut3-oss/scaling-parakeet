@@ -51,8 +51,8 @@
 
         <!-- Receipt Modal -->
         <div v-if="showReceiptModal && receipt" class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/50" @click.self="closeReceiptModal">
-            <div class="flex items-center justify-center p-4">
-                <div class="relative w-full max-w-2xl">
+            <div class="min-h-screen flex items-center justify-center p-4 sm:p-6">
+                <div class="relative w-full max-w-2xl mx-auto">
                     <button
                         type="button"
                         class="absolute -top-10 right-0 text-white hover:text-gray-200 text-2xl font-light z-60"
@@ -157,6 +157,9 @@
 
 <style scoped>
 .receipt-container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     background: #ffffff;
     border-radius: 22px;
     overflow: hidden;
@@ -211,6 +214,8 @@
     font-size: 13px;
     font-weight: 600;
     backdrop-filter: blur(8px);
+    white-space: normal;
+    max-width: 100%;
 }
 
 .content {
@@ -347,35 +352,48 @@
     .header,
     .content,
     .footer {
-        padding: 28px 22px;
+        padding: 22px 18px;
+    }
+
+    .amount-box {
+        padding: 20px;
     }
 
     .amount {
-        font-size: 34px;
+        font-size: 28px;
+    }
+
+    .status-badge {
+        font-size: 12px;
+        padding: 8px 14px;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
 
     .info-row {
         flex-direction: column;
         align-items: flex-start;
+        padding: 16px 18px;
     }
 
     .info-value {
         text-align: left;
+        width: 100%;
+        word-break: break-word;
     }
 
     .receipt-container {
-        width: calc(100vw - 24px);
-        max-height: calc(100vh - 24px);
-        border-radius: 12px;
+        width: min(calc(100vw - 32px), 100%);
+        max-height: calc(100vh - 32px);
+        border-radius: 16px;
         overflow: hidden;
     }
 
     .brand h1 {
-        font-size: 18px;
-    }
-
-    .amount {
-        font-size: 28px;
+        font-size: 20px;
     }
 
     .detail-value {
@@ -383,7 +401,7 @@
     }
 
     .section-title {
-        font-size: 11px;
+        font-size: 12px;
     }
 }
 

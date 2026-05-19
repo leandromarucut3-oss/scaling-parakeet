@@ -261,21 +261,38 @@ class UserManagementController extends Controller
             ]);
         }
 
-        Purchase::create([
-            'user_id' => $user->id,
-            'referrer_id' => null,
-            'plan_key' => $data['plan_key'],
-            'plan_name' => $plan['name'],
-            'daily_interest_bps' => $plan['daily_interest_bps'],
-            'duration_days' => $plan['duration_days'],
-            'min_amount_cents' => $plan['min_amount_cents'],
-            'max_amount_cents' => $plan['max_amount_cents'],
-            'amount_cents' => $amountCents,
-            'referral_commission_cents' => 0,
-            'payment_method' => 'admin_grant',
-            'bank_name' => null,
-            'status' => 'completed',
-        ]);
+        DB::transaction(function () use ($user, $plan, $amountCents, $data): void {
+            $referrerId = null;
+            $commissionCents = 0;
+
+            if ($user->referrer_id && $user->referrer_id !== $user->id) {
+                $referrerLocked = User::query()->whereKey($user->referrer_id)->lockForUpdate()->first();
+                if ($referrerLocked) {
+                    $commissionCents = (int) round($amountCents * 0.05);
+                    if ($commissionCents > 0) {
+                        $referrerLocked->balance_cents += $commissionCents;
+                        $referrerLocked->save();
+                        $referrerId = $referrerLocked->id;
+                    }
+                }
+            }
+
+            Purchase::create([
+                'user_id' => $user->id,
+                'referrer_id' => $referrerId,
+                'plan_key' => $data['plan_key'],
+                'plan_name' => $plan['name'],
+                'daily_interest_bps' => $plan['daily_interest_bps'],
+                'duration_days' => $plan['duration_days'],
+                'min_amount_cents' => $plan['min_amount_cents'],
+                'max_amount_cents' => $plan['max_amount_cents'],
+                'amount_cents' => $amountCents,
+                'referral_commission_cents' => $commissionCents,
+                'payment_method' => 'admin_grant',
+                'bank_name' => null,
+                'status' => 'completed',
+            ]);
+        });
 
         return back()->with('success', 'Package sent successfully.');
     }

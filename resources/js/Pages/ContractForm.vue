@@ -31,7 +31,18 @@ const form = useForm({
     purchase_id: props.purchase?.id ?? null,
 });
 
-const previewSignedAt = computed(() => form.signed_at || today);
+const previewSignedAt = computed(() => {
+    if (!form.signed_at) {
+        return today;
+    }
+
+    const date = new Date(form.signed_at);
+    return date.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
+});
 
 const planType = computed(() => props.purchase?.plan_name ?? 'Premiere Plan');
 const durationDays = computed(() => props.purchase?.duration_days ?? '120');
