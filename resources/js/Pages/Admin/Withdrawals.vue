@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 const props = defineProps({
     withdrawals: {
@@ -12,6 +12,7 @@ const props = defineProps({
 
 const withdrawalAction = useForm({});
 const copiedId = ref(null);
+const removedIds = ref(new Set());
 
 const currency = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -21,6 +22,10 @@ const currency = new Intl.NumberFormat('en-US', {
 
 const formatCurrency = (cents) => currency.format((cents ?? 0) / 100);
 
+const filteredWithdrawals = computed(() => {
+    return props.withdrawals.filter(w => !removedIds.value.has(w.id));
+});
+
 const submitWithdrawalAction = (id, action) => {
     const routeName = action === 'approve'
         ? 'admin.withdrawals.approve'
@@ -28,6 +33,9 @@ const submitWithdrawalAction = (id, action) => {
 
     withdrawalAction.post(route(routeName, id), {
         preserveScroll: true,
+        onSuccess: () => {
+            removedIds.value.add(id);
+        },
     });
 };
 
@@ -73,7 +81,7 @@ const copyAccount = async (id, accountNumber) => {
                                 </thead>
                                 <tbody>
                                     <tr
-                                        v-for="withdrawal in props.withdrawals"
+                                        v-for="withdrawal in filteredWithdrawals"
                                         :key="withdrawal.id"
                                         class="border-t border-emerald-100/60"
                                     >
@@ -124,7 +132,7 @@ const copyAccount = async (id, accountNumber) => {
                                             </div>
                                         </td>
                                     </tr>
-                                    <tr v-if="!props.withdrawals.length">
+                                    <tr v-if="!filteredWithdrawals.length">
                                         <td class="px-4 py-6 text-center text-sm text-slate-500" colspan="6">
                                             No withdrawal requests yet.
                                         </td>
