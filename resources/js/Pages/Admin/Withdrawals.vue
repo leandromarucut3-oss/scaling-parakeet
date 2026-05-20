@@ -31,7 +31,7 @@ const submitWithdrawalAction = (id, action) => {
         ? 'admin.withdrawals.approve'
         : 'admin.withdrawals.reject';
 
-    withdrawalAction.post(route(routeName, id), {
+    withdrawalAction.post(route(routeName, { withdrawal: id }), {
         preserveScroll: true,
         onSuccess: () => {
             removedIds.value.add(id);
