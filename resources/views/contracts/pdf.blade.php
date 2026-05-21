@@ -360,7 +360,7 @@ This Agreement consists of four (4) pages, including the page on which this ackn
 
 <p class="justify">
 The parties hereunto affixed their signatures this
-<span class="fillable">{{ $contract->signed_at ? $contract->signed_at->setTimezone(config('app.timezone'))->format('F j, Y') : now()->setTimezone(config('app.timezone'))->format('F j, Y') }}</span>
+<span class="fillable">{{ now()->setTimezone(config('app.timezone'))->format('F j, Y') }}</span>
 at Taguig City, Philippines.
 </p>
 
