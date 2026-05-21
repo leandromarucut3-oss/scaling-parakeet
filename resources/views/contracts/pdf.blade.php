@@ -96,7 +96,7 @@
 
 <p class="justify">
 This Partnership Agreement (the "Agreement") is executed on
-<span class="fillable">{{ $contract->signed_at ? $contract->signed_at->format('F j, Y') : now()->format('F j, Y') }}</span>
+<span class="fillable">{{ $contract->signed_at ? $contract->signed_at->setTimezone(config('app.timezone'))->format('F j, Y') : now()->setTimezone(config('app.timezone'))->format('F j, Y') }}</span>
 by and between:
 </p>
 
@@ -136,7 +136,7 @@ NOW, THEREFORE, for and in consideration of the foregoing premises and the mutua
     $phpAmount = $usdAmount * $usdToPhpRate;
     $dailyInterestUsd = $usdAmount * ($purchase->daily_interest_bps / 10000);
     $dailyInterestPhp = $dailyInterestUsd * $usdToPhpRate;
-@endphp
+endphp
 
 <div class="section">
 <h3>1. INVESTMENT PACKAGE</h3>
@@ -149,22 +149,21 @@ NOW, THEREFORE, for and in consideration of the foregoing premises and the mutua
 days</p>
 
 <p>Investment Amount:
-P
-<span class="fillable">{{ number_format($phpAmount, 2) }}</span></p>
+<span class="fillable">USD {{ number_format($usdAmount, 2) }}</span></p>
 
 <p>Daily Interest Rate:
 <span class="fillable">{{ number_format($purchase->daily_interest_bps / 100, 2) }}%</span></p>
 
 <p>Commencement Date:
-<span class="fillable">{{ optional($contract->signed_at)->format('F j, Y') ?? now()->format('F j, Y') }}</span></p>
+<span class="fillable">{{ optional($contract->signed_at)->setTimezone(config('app.timezone'))->format('F j, Y') ?? now()->setTimezone(config('app.timezone'))->format('F j, Y') }}</span></p>
 </div>
 
 <div class="section">
 <h3>2. TERM AND PAYMENT OF INTEREST</h3>
 
 <p class="justify">
-The Company shall pay the Investor a daily interest income based on the selected plan and investment amount, computed at PHP
-<span class="fillable">{{ number_format($dailyInterestPhp, 2) }}</span>
+The Company shall pay the Investor a daily interest income based on the selected plan and investment amount, computed at USD
+<span class="fillable">{{ number_format($dailyInterestUsd, 2) }}</span>
 per day.
 </p>
 
@@ -361,7 +360,7 @@ This Agreement consists of four (4) pages, including the page on which this ackn
 
 <p class="justify">
 The parties hereunto affixed their signatures this
-<span class="fillable">{{ $contract->signed_at ? $contract->signed_at->format('F j, Y') : now()->format('F j, Y') }}</span>
+<span class="fillable">{{ $contract->signed_at ? $contract->signed_at->setTimezone(config('app.timezone'))->format('F j, Y') : now()->setTimezone(config('app.timezone'))->format('F j, Y') }}</span>
 at Taguig City, Philippines.
 </p>
 

@@ -44,7 +44,7 @@
 
 <tr>
 <td style="font-weight:bold;width:40%">Amount:</td>
-<td>{{ number_format(($withdrawal->amount_cents ?? 0) / 100, 2) }}</td>
+<td>USD {{ number_format(($withdrawal->amount_cents ?? 0) / 100, 2) }}</td>
 </tr>
 
 <tr>
@@ -65,7 +65,7 @@
 
 <tr>
 <td style="font-weight:bold">Date:</td>
-<td>{{ optional($withdrawal->updated_at ?? $withdrawal->created_at)->format('F j, Y') }}</td>
+<td>{{ optional($withdrawal->updated_at ?? $withdrawal->created_at)->setTimezone(config('app.timezone'))->format('F j, Y') }}</td>
 </tr>
 
 </tbody>
