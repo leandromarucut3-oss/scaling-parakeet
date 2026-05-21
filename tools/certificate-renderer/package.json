@@ -1,0 +1,12 @@
+{
+  "name": "certificate-renderer",
+  "version": "1.0.0",
+  "description": "Render certificate HTML to PDF and PNG using Puppeteer",
+  "main": "renderer.js",
+  "scripts": {
+    "start": "node renderer.js"
+  },
+  "dependencies": {
+    "puppeteer": "^21.0.0"
+  }
+}
