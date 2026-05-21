@@ -74,6 +74,12 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/send-package', [UserManagementController::class, 'sendPackage'])
             ->name('send-package');
 
+        Route::get('/users/{user}', [UserManagementController::class, 'show'])
+            ->name('users.show');
+
+        Route::delete('/users/{user}/deposits/{purchase}', [UserManagementController::class, 'destroyDeposit'])
+            ->name('users.deposit.destroy');
+
         Route::get('/recent-transactions', [UserManagementController::class, 'recentTransactions'])
             ->name('recent-transactions');
 

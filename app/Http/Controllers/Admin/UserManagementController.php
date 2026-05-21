@@ -7,6 +7,8 @@ use App\Models\Purchase;
 use App\Models\User;
 use App\Models\WithdrawalRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -94,6 +96,76 @@ class UserManagementController extends Controller
             'users' => $users,
             'appUrl' => config('app.url'),
         ]);
+    }
+
+    public function show(User $user): JsonResponse
+    {
+        $user->loadMissing('referrer');
+
+        $depositHistory = Purchase::query()
+            ->where('user_id', $user->id)
+            ->orderByDesc('created_at')
+            ->limit(20)
+            ->get()
+            ->map(fn (Purchase $purchase) => [
+                'id' => $purchase->id,
+                'amount_cents' => $purchase->amount_cents,
+                'status' => $purchase->status,
+                'created_at' => optional($purchase->created_at)->toDateTimeString(),
+                'plan_name' => $purchase->plan_name,
+                'bank_name' => $purchase->bank_name,
+            ]);
+
+        $withdrawalHistory = WithdrawalRequest::query()
+            ->where('user_id', $user->id)
+            ->orderByDesc('created_at')
+            ->limit(20)
+            ->get()
+            ->map(fn (WithdrawalRequest $withdrawal) => [
+                'id' => $withdrawal->id,
+                'amount_cents' => $withdrawal->amount_cents,
+                'status' => $withdrawal->status,
+                'created_at' => optional($withdrawal->created_at)->toDateTimeString(),
+                'bank_name' => $withdrawal->bank_name,
+                'bank_account_name' => $withdrawal->bank_account_name,
+                'bank_account_number' => $withdrawal->bank_account_number,
+            ]);
+
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'created_at' => optional($user->created_at)->toDateTimeString(),
+            'balance_cents' => $user->balance_cents,
+            'bank_name' => $user->bank_name,
+            'bank_account_name' => $user->bank_account_name,
+            'bank_account_number' => $user->bank_account_number,
+            'referrer' => $user->referrer ? [
+                'id' => $user->referrer->id,
+                'name' => $user->referrer->name,
+                'email' => $user->referrer->email,
+            ] : null,
+            'deposit_history' => $depositHistory,
+            'withdrawal_history' => $withdrawalHistory,
+        ]);
+    }
+
+    public function destroyDeposit(User $user, Purchase $purchase): JsonResponse
+    {
+        if ($purchase->user_id !== $user->id) {
+            abort(403);
+        }
+
+        DB::transaction(function () use ($purchase): void {
+            $purchaseLocked = Purchase::query()->whereKey($purchase->id)->lockForUpdate()->first();
+            if (! $purchaseLocked) {
+                return;
+            }
+
+            $purchaseLocked->delete();
+        });
+
+        return response()->json(['message' => 'Deposit deleted successfully.']);
     }
 
     public function sendFunds(Request $request)

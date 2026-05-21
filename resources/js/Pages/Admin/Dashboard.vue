@@ -72,6 +72,57 @@ const formatDate = (value) => {
 
     return dateFormatter.format(parsed);
 };
+
+const showUserModal = ref(false);
+const selectedUser = ref(null);
+const loadingUser = ref(false);
+const userError = ref('');
+
+const openUserModal = async (user) => {
+    showUserModal.value = true;
+    selectedUser.value = null;
+    userError.value = '';
+    loadingUser.value = true;
+
+    try {
+        const response = await window.axios.get(route('admin.users.show', { user: user.id }));
+        selectedUser.value = response.data;
+    } catch (error) {
+        userError.value = 'Unable to load user details. Please refresh and try again.';
+    } finally {
+        loadingUser.value = false;
+    }
+};
+
+const closeUserModal = () => {
+    showUserModal.value = false;
+    selectedUser.value = null;
+    userError.value = '';
+    loadingUser.value = false;
+};
+
+const deleteDeposit = async (depositId) => {
+    if (!selectedUser.value) {
+        return;
+    }
+
+    if (!window.confirm('Delete this deposit? This will remove the record and stop it from accruing further interest.')) {
+        return;
+    }
+
+    try {
+        await window.axios.delete(route('admin.users.deposit.destroy', {
+            user: selectedUser.value.id,
+            purchase: depositId,
+        }));
+
+        selectedUser.value.deposit_history = selectedUser.value.deposit_history.filter(
+            (deposit) => deposit.id !== depositId,
+        );
+    } catch (error) {
+        userError.value = 'Unable to delete this deposit. Please try again.';
+    }
+};
 </script>
 
 <template>
@@ -112,7 +163,8 @@ const formatDate = (value) => {
                                     <tr
                                         v-for="user in filteredUsers"
                                         :key="user.id"
-                                        class="border-t border-emerald-100/60 hover:bg-emerald-50/70"
+                                        class="border-t border-emerald-100/60 hover:bg-emerald-50/70 cursor-pointer"
+                                        @click="openUserModal(user)"
                                     >
                                         <td class="px-4 py-4">
                                             <div class="font-semibold text-emerald-950">{{ user.name }}</div>
@@ -152,6 +204,154 @@ const formatDate = (value) => {
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showUserModal" class="fixed inset-0 z-50 overflow-y-auto px-4 py-8 sm:px-6 lg:px-8">
+            <div class="absolute inset-0 bg-slate-900/70" @click="closeUserModal"></div>
+            <div class="relative mx-auto w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-black/10">
+                <div class="flex items-start justify-between border-b border-slate-200 px-6 py-5">
+                    <div>
+                        <h2 class="text-xl font-semibold text-slate-900">User account details</h2>
+                        <p class="mt-1 text-sm text-slate-500">Review account info, bank details, and transaction history.</p>
+                    </div>
+                    <button
+                        type="button"
+                        class="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        @click="closeUserModal"
+                    >
+                        Close
+                    </button>
+                </div>
+
+                <div class="p-6">
+                    <template v-if="loadingUser">
+                        <div class="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center text-slate-500">
+                            Loading user details...
+                        </div>
+                    </template>
+
+                    <template v-else-if="userError">
+                        <div class="rounded-3xl border border-rose-100 bg-rose-50 p-6 text-sm text-rose-700">
+                            {{ userError }}
+                        </div>
+                    </template>
+
+                    <template v-else-if="selectedUser">
+                        <div class="grid gap-4 lg:grid-cols-3">
+                            <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                                <div class="text-xs uppercase tracking-[0.25em] text-slate-500">Account</div>
+                                <div class="mt-3 text-base font-semibold text-slate-900">{{ selectedUser.name }}</div>
+                                <div class="mt-1 text-sm text-slate-600">{{ selectedUser.email }}</div>
+                                <div class="mt-3 text-xs uppercase tracking-[0.2em] text-slate-500">Joined</div>
+                                <div class="mt-1 text-sm text-slate-900">{{ formatDate(selectedUser.created_at) }}</div>
+                            </div>
+                            <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                                <div class="text-xs uppercase tracking-[0.25em] text-slate-500">Balance</div>
+                                <div class="mt-3 text-base font-semibold text-emerald-900">{{ formatCurrency(selectedUser.balance_cents) }}</div>
+                            </div>
+                            <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                                <div class="text-xs uppercase tracking-[0.25em] text-slate-500">Referrer</div>
+                                <div class="mt-3 text-sm text-slate-900">{{ selectedUser.referrer?.name || '—' }}</div>
+                                <div v-if="selectedUser.referrer?.email" class="mt-1 text-xs text-slate-500">{{ selectedUser.referrer.email }}</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                            <div class="text-xs uppercase tracking-[0.25em] text-slate-500">Bank details</div>
+                            <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                                <div>
+                                    <div class="text-xs text-slate-500">Bank</div>
+                                    <div class="mt-1 text-sm text-slate-900">{{ selectedUser.bank_name || '—' }}</div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-slate-500">Account name</div>
+                                    <div class="mt-1 text-sm text-slate-900">{{ selectedUser.bank_account_name || '—' }}</div>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <div class="text-xs text-slate-500">Account number</div>
+                                    <div class="mt-1 text-sm text-slate-900 break-all">{{ selectedUser.bank_account_number || '—' }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 grid gap-6 lg:grid-cols-2">
+                            <section class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+                                <div class="mb-4 flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-slate-900">Deposit history</h3>
+                                        <p class="text-xs text-slate-500">Recent deposits made by this user.</p>
+                                    </div>
+                                </div>
+                                <div class="overflow-hidden rounded-3xl border border-slate-200">
+                                    <table class="w-full border-collapse text-sm">
+                                        <thead class="bg-slate-50 text-slate-800">
+                                            <tr>
+                                                <th class="px-3 py-3 text-left uppercase tracking-[0.18em] text-[0.65rem]">Date</th>
+                                                <th class="px-3 py-3 text-left uppercase tracking-[0.18em] text-[0.65rem]">Amount</th>
+                                                <th class="px-3 py-3 text-left uppercase tracking-[0.18em] text-[0.65rem]">Status</th>
+                                                <th class="px-3 py-3 text-left uppercase tracking-[0.18em] text-[0.65rem]">Package</th>
+                                                <th class="px-3 py-3 text-right uppercase tracking-[0.18em] text-[0.65rem]">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="deposit in selectedUser.deposit_history" :key="`deposit-${deposit.id}`" class="border-t border-slate-200">
+                                                <td class="px-3 py-3 text-slate-700">{{ formatDate(deposit.created_at) }}</td>
+                                                <td class="px-3 py-3 font-semibold text-emerald-900">{{ formatCurrency(deposit.amount_cents) }}</td>
+                                                <td class="px-3 py-3 uppercase text-xs tracking-[0.18em] text-slate-600">{{ deposit.status }}</td>
+                                                <td class="px-3 py-3 text-slate-700">{{ deposit.plan_name || 'Package purchase' }}</td>
+                                                <td class="px-3 py-3 text-right">
+                                                    <button
+                                                        type="button"
+                                                        class="rounded-full border border-rose-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-widest text-rose-700 hover:bg-rose-50"
+                                                        @click.stop="deleteDeposit(deposit.id)"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr v-if="!selectedUser.deposit_history.length">
+                                                <td class="px-3 py-6 text-center text-sm text-slate-500" colspan="5">No deposit history available.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+
+                            <section class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+                                <div class="mb-4 flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-slate-900">Withdrawal history</h3>
+                                        <p class="text-xs text-slate-500">Recent withdrawal requests by this user.</p>
+                                    </div>
+                                </div>
+                                <div class="overflow-hidden rounded-3xl border border-slate-200">
+                                    <table class="w-full border-collapse text-sm">
+                                        <thead class="bg-slate-50 text-slate-800">
+                                            <tr>
+                                                <th class="px-3 py-3 text-left uppercase tracking-[0.18em] text-[0.65rem]">Date</th>
+                                                <th class="px-3 py-3 text-left uppercase tracking-[0.18em] text-[0.65rem]">Amount</th>
+                                                <th class="px-3 py-3 text-left uppercase tracking-[0.18em] text-[0.65rem]">Status</th>
+                                                <th class="px-3 py-3 text-left uppercase tracking-[0.18em] text-[0.65rem]">Bank</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="withdrawal in selectedUser.withdrawal_history" :key="`withdrawal-${withdrawal.id}`" class="border-t border-slate-200">
+                                                <td class="px-3 py-3 text-slate-700">{{ formatDate(withdrawal.created_at) }}</td>
+                                                <td class="px-3 py-3 font-semibold text-emerald-900">{{ formatCurrency(withdrawal.amount_cents) }}</td>
+                                                <td class="px-3 py-3 uppercase text-xs tracking-[0.18em] text-slate-600">{{ withdrawal.status }}</td>
+                                                <td class="px-3 py-3 text-slate-700">{{ withdrawal.bank_name || '—' }}</td>
+                                            </tr>
+                                            <tr v-if="!selectedUser.withdrawal_history.length">
+                                                <td class="px-3 py-6 text-center text-sm text-slate-500" colspan="4">No withdrawal history available.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
