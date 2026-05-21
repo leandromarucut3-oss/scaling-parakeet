@@ -17,6 +17,7 @@
         "tightenco/ziggy": "^2.0"
     },
     "require-dev": {
+        "cweagans/composer-patches": "*",
         "fakerphp/faker": "^1.9.1",
         "laravel/breeze": "^1.29",
         "laravel/pint": "^1.0",
@@ -60,6 +61,11 @@
     "extra": {
         "laravel": {
             "dont-discover": []
+        },
+        "patches": {
+            "laravel/sanctum": {
+                "Fix PHP 8.4 nullable type deprecation": "patches/sanctum-nullable-type.patch"
+            }
         }
     },
     "config": {
@@ -70,6 +76,7 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
+            "cweagans/composer-patches": true,
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
         }
