@@ -132,10 +132,10 @@ NOW, THEREFORE, for and in consideration of the foregoing premises and the mutua
 </p>
 
 @php
-    $usdAmount = $purchase->amount_cents / 100;
-    $phpAmount = $usdAmount * $usdToPhpRate;
-    $dailyInterestUsd = $usdAmount * ($purchase->daily_interest_bps / 10000);
-    $dailyInterestPhp = $dailyInterestUsd * $usdToPhpRate;
+    $usdAmount = $usdAmount ?? ($purchase->amount_cents / 100);
+    $phpAmount = $phpAmount ?? ($usdAmount * $usdToPhpRate);
+    $dailyInterestUsd = $dailyInterestUsd ?? ($usdAmount * ($purchase->daily_interest_bps / 10000));
+    $dailyInterestPhp = $dailyInterestPhp ?? ($dailyInterestUsd * $usdToPhpRate);
 endphp
 
 <div class="section">
