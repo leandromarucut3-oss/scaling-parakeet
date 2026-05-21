@@ -368,4 +368,27 @@ class UserManagementController extends Controller
 
         return back()->with('success', 'Package sent successfully.');
     }
+
+    public function searchUsers(Request $request): JsonResponse
+    {
+        $query = $request->input('q', '');
+
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $users = User::query()
+            ->where('name', 'like', "%{$query}%")
+            ->orWhere('email', 'like', "%{$query}%")
+            ->limit(10)
+            ->get()
+            ->map(fn (User $user) => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'balance_cents' => $user->balance_cents,
+            ]);
+
+        return response()->json($users);
+    }
 }

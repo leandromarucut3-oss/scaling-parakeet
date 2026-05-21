@@ -74,6 +74,9 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/send-package', [UserManagementController::class, 'sendPackage'])
             ->name('send-package');
 
+        Route::get('/users/search', [UserManagementController::class, 'searchUsers'])
+            ->name('users.search');
+
         Route::get('/users/{user}', [UserManagementController::class, 'show'])
             ->name('users.show');
 
