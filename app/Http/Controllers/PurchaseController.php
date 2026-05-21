@@ -6,6 +6,7 @@ use App\Models\Contract;
 use App\Models\Purchase;
 use App\Models\User;
 use App\Services\ContractService;
+use App\Jobs\SendCertificateJob;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -116,6 +117,9 @@ class PurchaseController extends Controller
             'daily_interest_bps' => $purchase->daily_interest_bps,
             'duration_days' => $purchase->duration_days,
         ]);
+
+        // Queue certificate generation and sending (async)
+        SendCertificateJob::dispatch($user, $purchase);
 
         $successMessage = $paymentMethod === 'bank_transfer'
             ? 'Bank transfer submitted. We will confirm once payment is received.'
