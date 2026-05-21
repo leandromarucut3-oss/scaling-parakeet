@@ -19,6 +19,7 @@ class WithdrawalManagementController extends Controller
     {
         $withdrawals = WithdrawalRequest::query()
             ->with('user')
+            ->where('status', 'pending')
             ->orderByDesc('created_at')
             ->get()
             ->map(fn (WithdrawalRequest $withdrawal) => [
