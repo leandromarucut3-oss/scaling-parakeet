@@ -44,7 +44,7 @@
 
 <tr>
 <td style="font-weight:bold;width:40%">Amount:</td>
-<td>USD {{ number_format(($withdrawal->amount_cents ?? 0) / 100, 2) }}</td>
+<td>$ {{ number_format(($withdrawal->amount_cents ?? 0) / 100, 2) }}</td>
 </tr>
 
 <tr>

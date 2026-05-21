@@ -149,7 +149,7 @@ endphp
 days</p>
 
 <p>Investment Amount:
-<span class="fillable">USD {{ number_format($usdAmount, 2) }}</span></p>
+<span class="fillable">$ {{ number_format($usdAmount, 2) }}</span></p>
 
 <p>Daily Interest Rate:
 <span class="fillable">{{ number_format($purchase->daily_interest_bps / 100, 2) }}%</span></p>
@@ -162,7 +162,7 @@ days</p>
 <h3>2. TERM AND PAYMENT OF INTEREST</h3>
 
 <p class="justify">
-The Company shall pay the Investor a daily interest income based on the selected plan and investment amount, computed at USD
+The Company shall pay the Investor a daily interest income based on the selected plan and investment amount, computed at $
 <span class="fillable">{{ number_format($dailyInterestUsd, 2) }}</span>
 per day.
 </p>
