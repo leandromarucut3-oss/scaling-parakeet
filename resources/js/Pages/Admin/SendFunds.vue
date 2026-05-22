@@ -47,9 +47,9 @@ const insufficientFunds = computed(() => amountCents.value > adminBalanceCents.v
 
 const formatCurrency = (cents) => currency.format((cents ?? 0) / 100);
 
-const searchUsers = async (query) => {
-    searchQuery.value = query;
+let searchTimer = null;
 
+const doSearch = async (query) => {
     if (query.length < 2) {
         filteredUsers.value = [];
         showDropdown.value = false;
@@ -67,6 +67,13 @@ const searchUsers = async (query) => {
     } finally {
         loading.value = false;
     }
+};
+
+const searchUsers = (query) => {
+    searchQuery.value = query;
+
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => doSearch(query), 250);
 };
 
 const selectUser = (user) => {
