@@ -43,6 +43,11 @@ const filteredUsers = computed(() => {
         : props.users;
 
     return [...base].sort((a, b) => {
+        // Sort online users first
+        if (a.is_online && !b.is_online) return -1;
+        if (!a.is_online && b.is_online) return 1;
+
+        // If both online or both offline, sort by creation date (newest first)
         const aDate = a.created_at ? new Date(a.created_at).getTime() : 0;
         const bDate = b.created_at ? new Date(b.created_at).getTime() : 0;
 
