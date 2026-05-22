@@ -16,7 +16,11 @@ class UpdateLastSeenAt
     public function handle(Request $request, Closure $next): Response
     {
         if (auth()->check()) {
-            auth()->user()->update(['last_seen_at' => now()]);
+            $user = auth()->user();
+            // Only update if last_seen_at is null or more than 1 minute old
+            if (!$user->last_seen_at || $user->last_seen_at->addMinute()->isPast()) {
+                $user->update(['last_seen_at' => now()]);
+            }
         }
 
         return $next($request);

@@ -32,6 +32,7 @@ class User extends Authenticatable
         'bank_account_number',
         'referral_code',
         'referrer_id',
+        'last_seen_at',
     ];
 
     /**
