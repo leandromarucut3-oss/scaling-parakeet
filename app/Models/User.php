@@ -53,6 +53,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'balance_cents' => 'integer',
+        'last_seen_at' => 'datetime',
     ];
 
     protected static function booted(): void
@@ -86,5 +87,14 @@ class User extends Authenticatable
     public function contract(): HasOne
     {
         return $this->hasOne(Contract::class);
+    }
+
+    public function isOnline(): bool
+    {
+        if (!$this->last_seen_at) {
+            return false;
+        }
+
+        return $this->last_seen_at->greaterThan(now()->subMinutes(5));
     }
 }

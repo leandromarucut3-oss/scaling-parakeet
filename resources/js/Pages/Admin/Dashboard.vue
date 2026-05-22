@@ -195,7 +195,14 @@ const deleteDeposit = async (depositId) => {
                                         @click="openUserModal(user)"
                                     >
                                         <td class="px-4 py-4">
-                                            <div class="font-semibold text-emerald-950">{{ user.name }}</div>
+                                            <div class="flex items-center gap-2">
+                                                <span
+                                                    class="inline-block h-3 w-3 rounded-full"
+                                                    :class="user.is_online ? 'bg-green-500' : 'bg-slate-300'"
+                                                    :title="user.is_online ? 'Online' : 'Offline'"
+                                                ></span>
+                                                <span class="font-semibold text-emerald-950">{{ user.name }}</span>
+                                            </div>
                                         <div v-if="user.referral_code" class="mt-1 text-xs text-emerald-700 break-words">
                                             <a
                                                 :href="referralUrl(user.referral_code)"

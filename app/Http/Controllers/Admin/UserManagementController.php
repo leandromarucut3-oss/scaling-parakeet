@@ -32,6 +32,7 @@ class UserManagementController extends Controller
                 'referral_code' => $user->referral_code,
                 'created_at' => optional($user->created_at)->toDateString(),
                 'is_new' => $user->created_at && $user->created_at->greaterThan(now()->subDay()),
+                'is_online' => $user->isOnline(),
                 'roles' => $user->getRoleNames(),
                 'balance_cents' => $user->balance_cents,
                 'referrer' => $user->referrer ? [
