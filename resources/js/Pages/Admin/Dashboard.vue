@@ -42,17 +42,15 @@ const filteredUsers = computed(() => {
         })
         : props.users;
 
-    return [...base].sort((a, b) => {
-        // Sort online users first
-        if (a.is_online && !b.is_online) return -1;
-        if (!a.is_online && b.is_online) return 1;
+    return base
+        .map((user, index) => ({ user, index }))
+        .sort((a, b) => {
+            if (a.user.is_online && !b.user.is_online) return -1;
+            if (!a.user.is_online && b.user.is_online) return 1;
 
-        // If both online or both offline, sort by creation date (newest first)
-        const aDate = a.created_at ? new Date(a.created_at).getTime() : 0;
-        const bDate = b.created_at ? new Date(b.created_at).getTime() : 0;
-
-        return bDate - aDate;
-    });
+            return a.index - b.index;
+        })
+        .map(({ user }) => user);
 });
 
 const formatCurrency = (cents) => currency.format((cents ?? 0) / 100);
