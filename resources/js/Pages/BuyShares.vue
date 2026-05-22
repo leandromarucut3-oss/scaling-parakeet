@@ -524,6 +524,7 @@ const receiptDestinationAccount = computed(() => {
                             </button>
                             <div v-if="activePaymentMode === 'balance'" class="border-t border-emerald-100 px-4 py-4">
                                 <input
+                                    name="amount"
                                     v-model="form.amount"
                                     type="number"
                                     step="0.01"
@@ -674,6 +675,7 @@ const receiptDestinationAccount = computed(() => {
                         </div>
                         <div class="mt-4">
                             <input
+                                name="amount"
                                 v-model="form.amount"
                                 type="number"
                                 step="0.01"

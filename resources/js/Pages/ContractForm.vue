@@ -147,6 +147,7 @@ const submit = () => {
                                     <label class="block">
                                         <span class="text-sm font-semibold text-slate-700">Investor Full Name</span>
                                         <input
+                                            name="investor_name"
                                             v-model="form.investor_name"
                                             type="text"
                                             class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm"
@@ -157,6 +158,7 @@ const submit = () => {
                                     <label class="block">
                                         <span class="text-sm font-semibold text-slate-700">Civil Status</span>
                                         <input
+                                            name="civil_status"
                                             v-model="form.civil_status"
                                             type="text"
                                             class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm"
@@ -167,6 +169,7 @@ const submit = () => {
                                 <label class="block">
                                     <span class="text-sm font-semibold text-slate-700">Complete Address</span>
                                     <textarea
+                                        name="complete_address"
                                         v-model="form.complete_address"
                                         class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm"
                                         rows="3"
@@ -177,6 +180,7 @@ const submit = () => {
                                     <label class="block">
                                         <span class="text-sm font-semibold text-slate-700">ID Type</span>
                                         <input
+                                            name="id_type"
                                             v-model="form.id_type"
                                             type="text"
                                             class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm"
@@ -186,6 +190,7 @@ const submit = () => {
                                     <label class="block">
                                         <span class="text-sm font-semibold text-slate-700">ID Number</span>
                                         <input
+                                            name="id_number"
                                             v-model="form.id_number"
                                             type="text"
                                             class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm"
@@ -195,6 +200,7 @@ const submit = () => {
                                     <label class="block">
                                         <span class="text-sm font-semibold text-slate-700">Date Issued</span>
                                         <input
+                                            name="id_date_issued"
                                             v-model="form.id_date_issued"
                                             type="date"
                                             class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm"
@@ -206,6 +212,7 @@ const submit = () => {
                                     <label class="block">
                                         <span class="text-sm font-semibold text-slate-700">Signature (Type full name)</span>
                                         <input
+                                            name="signature_text"
                                             v-model="form.signature_text"
                                             type="text"
                                             class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm"
@@ -216,6 +223,7 @@ const submit = () => {
                                     <label class="block">
                                         <span class="text-sm font-semibold text-slate-700">Signing Date</span>
                                         <input
+                                            name="signed_at"
                                             v-model="form.signed_at"
                                             type="date"
                                             class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm"
