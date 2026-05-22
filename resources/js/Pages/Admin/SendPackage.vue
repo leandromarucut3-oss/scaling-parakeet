@@ -109,7 +109,7 @@ const submitSendPackage = () => {
                         <div>
                             <InputLabel for="user_search" value="Recipient user" />
                             <div class="relative mt-1">
-                                <TextInput
+                                <input
                                     id="user_search"
                                     :value="searchQuery"
                                     type="text"
@@ -117,7 +117,7 @@ const submitSendPackage = () => {
                                     @input="searchUsers($event.target.value)"
                                     @focus="showDropdown = filteredUsers.length > 0"
                                     @blur="setTimeout(() => showDropdown = false, 200)"
-                                    class="block w-full"
+                                    class="block w-full rounded-md border border-slate-200 px-4 py-2 text-sm"
                                 />
 
                                 <div v-if="loading" class="absolute right-3 top-3 text-emerald-600">
