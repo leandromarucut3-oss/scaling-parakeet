@@ -80,6 +80,9 @@ Route::middleware(['auth', 'role:admin'])
         Route::post('/package-slots', [UserManagementController::class, 'updatePackageSlots'])
             ->name('package-slots.update');
 
+        Route::get('/users/search', [UserManagementController::class, 'searchUsers'])
+            ->name('users.search');
+
         Route::get('/users/{user}', [UserManagementController::class, 'show'])
             ->name('users.show');
 

@@ -25,6 +25,11 @@ const form = useForm({
     amount: '',
 });
 
+const searchQuery = ref('');
+const filteredUsers = ref([]);
+const showDropdown = ref(false);
+const loading = ref(false);
+
 const selectedUser = computed(() => {
     return props.users.find((user) => user.id === Number(form.user_id)) || null;
 });
@@ -40,6 +45,34 @@ const currency = new Intl.NumberFormat('en-US', {
 });
 
 const formatCurrency = (cents) => currency.format((cents ?? 0) / 100);
+
+const searchUsers = async (query) => {
+    searchQuery.value = query;
+
+    if (query.length < 2) {
+        filteredUsers.value = [];
+        showDropdown.value = false;
+        return;
+    }
+
+    loading.value = true;
+    try {
+        const response = await fetch(`/admin/users/search?q=${encodeURIComponent(query)}`);
+        filteredUsers.value = await response.json();
+        showDropdown.value = filteredUsers.value.length > 0;
+    } catch (error) {
+        console.error('Search error:', error);
+        filteredUsers.value = [];
+    } finally {
+        loading.value = false;
+    }
+};
+
+const selectUser = (user) => {
+    form.user_id = user.id;
+    searchQuery.value = `${user.name} — ${user.email}`;
+    showDropdown.value = false;
+};
 
 const submitSendPackage = () => {
     if (!form.user_id) {
@@ -67,21 +100,37 @@ const submitSendPackage = () => {
 
                     <form class="space-y-6" @submit.prevent="submitSendPackage">
                         <div>
-                            <InputLabel for="user_id" value="Recipient user" />
-                            <select
-                                id="user_id"
-                                v-model="form.user_id"
-                                class="mt-1 block w-full rounded-md border border-emerald-100 bg-white px-3 py-2 text-sm text-emerald-900 focus:border-emerald-500 focus:ring-emerald-500"
-                            >
-                                <option disabled value="">Select a user</option>
-                                <option
-                                    v-for="user in props.users"
-                                    :key="user.id"
-                                    :value="user.id"
-                                >
-                                    {{ user.name }} — {{ user.email }}
-                                </option>
-                            </select>
+                            <InputLabel for="user_search" value="Recipient user" />
+                            <div class="relative mt-1">
+                                <TextInput
+                                    id="user_search"
+                                    :value="searchQuery"
+                                    type="text"
+                                    placeholder="Type name or email to search..."
+                                    @input="searchUsers($event.target.value)"
+                                    @focus="showDropdown = filteredUsers.length > 0"
+                                    @blur="setTimeout(() => showDropdown = false, 200)"
+                                    class="block w-full"
+                                />
+
+                                <div v-if="loading" class="absolute right-3 top-3 text-emerald-600">
+                                    <span class="text-xs">Searching...</span>
+                                </div>
+
+                                <div v-if="showDropdown && filteredUsers.length > 0" class="absolute top-full left-0 right-0 mt-1 max-h-64 overflow-y-auto rounded-md border border-emerald-100 bg-white shadow-lg z-50">
+                                    <button
+                                        v-for="user in filteredUsers"
+                                        :key="user.id"
+                                        type="button"
+                                        @click.prevent="selectUser(user)"
+                                        class="w-full px-3 py-2 text-left text-sm hover:bg-emerald-50 focus:bg-emerald-50 focus:outline-none border-b border-emerald-50 last:border-b-0 transition"
+                                    >
+                                        <div class="font-medium text-emerald-900">{{ user.name }}</div>
+                                        <div class="text-xs text-slate-600">{{ user.email }}</div>
+                                        <div class="text-xs text-slate-500">Balance: {{ formatCurrency(user.balance_cents) }}</div>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <div>
