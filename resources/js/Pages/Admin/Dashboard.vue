@@ -73,6 +73,34 @@ const formatDate = (value) => {
     return dateFormatter.format(parsed);
 };
 
+const formatTimeAgo = (value) => {
+    if (!value) {
+        return '—';
+    }
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+        return value;
+    }
+
+    const now = new Date();
+    const seconds = Math.floor((now - parsed) / 1000);
+
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    const weeks = Math.floor(days / 7);
+    if (weeks < 4) return `${weeks}w ago`;
+    const months = Math.floor(days / 30);
+    if (months < 12) return `${months}mo ago`;
+    const years = Math.floor(months / 12);
+    return `${years}y ago`;
+};
+
 const showUserModal = ref(false);
 const selectedUser = ref(null);
 const loadingUser = ref(false);
@@ -192,7 +220,10 @@ const deleteDeposit = async (depositId) => {
                                                 {{ user.referrer.email }}
                                             </div>
                                         </td>
-                                        <td class="px-4 py-4 text-xs text-slate-500">{{ formatDate(user.created_at) }}</td>
+                                        <td class="px-4 py-4 text-xs text-slate-500">
+                                            <div class="font-semibold text-emerald-700">{{ formatTimeAgo(user.created_at) }}</div>
+                                            <div class="text-slate-400">{{ formatDate(user.created_at) }}</div>
+                                        </td>
                                         <td class="px-4 py-4 text-right font-semibold text-emerald-950">{{ formatCurrency(user.balance_cents) }}</td>
                                     </tr>
                                     <tr v-if="!filteredUsers.length">
@@ -297,7 +328,10 @@ const deleteDeposit = async (depositId) => {
                                         </thead>
                                         <tbody>
                                             <tr v-for="deposit in selectedUser.deposit_history" :key="`deposit-${deposit.id}`" class="border-t border-slate-200">
-                                                <td class="px-3 py-3 text-slate-700">{{ formatDate(deposit.created_at) }}</td>
+                                                <td class="px-3 py-3 text-slate-700">
+                                                    <div>{{ formatTimeAgo(deposit.created_at) }}</div>
+                                                    <div class="text-xs text-slate-500">{{ formatDate(deposit.created_at) }}</div>
+                                                </td>
                                                 <td class="px-3 py-3 font-semibold text-emerald-900">{{ formatCurrency(deposit.amount_cents) }}</td>
                                                 <td class="px-3 py-3 uppercase text-xs tracking-[0.18em] text-slate-600">{{ deposit.status }}</td>
                                                 <td class="px-3 py-3 text-slate-700">{{ deposit.plan_name || 'Package purchase' }}</td>
@@ -338,7 +372,10 @@ const deleteDeposit = async (depositId) => {
                                         </thead>
                                         <tbody>
                                             <tr v-for="withdrawal in selectedUser.withdrawal_history" :key="`withdrawal-${withdrawal.id}`" class="border-t border-slate-200">
-                                                <td class="px-3 py-3 text-slate-700">{{ formatDate(withdrawal.created_at) }}</td>
+                                                <td class="px-3 py-3 text-slate-700">
+                                                    <div>{{ formatTimeAgo(withdrawal.created_at) }}</div>
+                                                    <div class="text-xs text-slate-500">{{ formatDate(withdrawal.created_at) }}</div>
+                                                </td>
                                                 <td class="px-3 py-3 font-semibold text-emerald-900">{{ formatCurrency(withdrawal.amount_cents) }}</td>
                                                 <td class="px-3 py-3 uppercase text-xs tracking-[0.18em] text-slate-600">{{ withdrawal.status }}</td>
                                                 <td class="px-3 py-3 text-slate-700">{{ withdrawal.bank_name || '—' }}</td>
