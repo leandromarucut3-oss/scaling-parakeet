@@ -241,6 +241,15 @@ const submitFranchiseApplication = () => {
                 </Link>
                 <Link
                     v-if="isAdmin"
+                    :href="route('admin.package-slots')"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                    @click="showSidebar = false"
+                >
+                    <span>Available slots</span>
+                    <span class="text-xs text-emerald-700">Go</span>
+                </Link>
+                <Link
+                    v-if="isAdmin"
                     :href="route('admin.recent-transactions')"
                     class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
                     @click="showSidebar = false"
@@ -346,6 +355,15 @@ const submitFranchiseApplication = () => {
                     @click="showSidebar = false"
                 >
                     <span>Send package</span>
+                    <span class="text-xs text-emerald-700">Go</span>
+                </Link>
+                <Link
+                    v-if="isAdmin"
+                    :href="route('admin.package-slots')"
+                    class="flex w-full items-center justify-between rounded-xl border border-emerald-100 px-4 py-3 text-sm text-emerald-900 hover:bg-emerald-50"
+                    @click="showSidebar = false"
+                >
+                    <span>Available slots</span>
                     <span class="text-xs text-emerald-700">Go</span>
                 </Link>
                 <Link

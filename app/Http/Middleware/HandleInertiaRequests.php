@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Purchase;
 use App\Models\Transfer;
 use App\Models\WithdrawalRequest;
+use App\Services\PackageSlotService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -176,25 +177,7 @@ class HandleInertiaRequests extends Middleware
             }
         }
 
-        $plans = config('investment_plans', []);
-        $planCounts = Purchase::query()
-            ->selectRaw('plan_key, count(*) as count')
-            ->whereIn('plan_key', array_keys($plans))
-            ->groupBy('plan_key')
-            ->pluck('count', 'plan_key')
-            ->all();
-
-        $packageSlotDetails = collect($plans)
-            ->mapWithKeys(function (array $plan, string $planKey) use ($planCounts) {
-                $capacity = $plan['slot_capacity'] ?? 0;
-                $taken = (int) ($planCounts[$planKey] ?? 0);
-                return [$planKey => [
-                    'slot_capacity' => $capacity,
-                    'taken_slots' => $taken,
-                    'remaining_slots' => max(0, $capacity - $taken),
-                ]];
-            })
-            ->all();
+        $packageSlotDetails = (new PackageSlotService())->getPackageSlotDetails();
 
         return [
             ...parent::share($request),

@@ -6,6 +6,7 @@ use App\Models\Contract;
 use App\Models\Purchase;
 use App\Models\User;
 use App\Services\ContractService;
+use App\Services\PackageSlotService;
 use App\Jobs\SendCertificateJob;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -171,18 +172,6 @@ class PurchaseController extends Controller
 
     private function getRemainingSlots(string $planKey): int
     {
-        $plans = config('investment_plans', []);
-        $plan = $plans[$planKey] ?? null;
-
-        if (! $plan || ! isset($plan['slot_capacity'])) {
-            return PHP_INT_MAX;
-        }
-
-        $slotCapacity = $plan['slot_capacity'];
-        $takenSlots = Purchase::query()
-            ->where('plan_key', $planKey)
-            ->count();
-
-        return max(0, $slotCapacity - $takenSlots);
+        return (new PackageSlotService())->getRemainingSlots($planKey);
     }
 }

@@ -74,6 +74,12 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/send-package', [UserManagementController::class, 'sendPackage'])
             ->name('send-package');
 
+        Route::get('/package-slots', [UserManagementController::class, 'packageSlots'])
+            ->name('package-slots');
+
+        Route::post('/package-slots', [UserManagementController::class, 'updatePackageSlots'])
+            ->name('package-slots.update');
+
         Route::get('/users/{user}', [UserManagementController::class, 'show'])
             ->name('users.show');
 

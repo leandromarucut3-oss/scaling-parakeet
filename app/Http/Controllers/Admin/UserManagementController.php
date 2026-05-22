@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Purchase;
 use App\Models\User;
 use App\Models\WithdrawalRequest;
+use App\Services\PackageSlotService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -180,6 +181,37 @@ class UserManagementController extends Controller
         return Inertia::render('Admin/SendPackage', [
             'users' => $this->getUsersList(),
         ]);
+    }
+
+    public function packageSlots(Request $request)
+    {
+        $service = new PackageSlotService();
+
+        return Inertia::render('Admin/PackageSlots', [
+            'packages' => $service->getPackageSlotDetails(),
+        ]);
+    }
+
+    public function updatePackageSlots(Request $request)
+    {
+        $plans = array_keys(config('investment_plans', []));
+
+        $data = $request->validate([
+            'slots' => ['required', 'array'],
+            'slots.*' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $service = new PackageSlotService();
+
+        foreach ($data['slots'] as $planKey => $remainingSlots) {
+            if (! in_array($planKey, $plans, true)) {
+                continue;
+            }
+
+            $service->setRemainingSlots($planKey, (int) $remainingSlots);
+        }
+
+        return back()->with('success', 'Package slot availability has been updated.');
     }
 
     public function recentTransactions(Request $request)
