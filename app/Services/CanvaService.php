@@ -20,49 +20,125 @@ class CanvaService
         ]);
     }
 
+    /**
+     * Exchange an OAuth authorization code (PKCE) for tokens and cache them.
+     * Returns token array on success or false on failure.
+     */
+    public function exchangeAuthorizationCode(string $code, string $codeVerifier, string $redirectUri)
+    {
+        try {
+            $resp = $this->client->post('oauth2/token', [
+                'form_params' => [
+                    'grant_type' => 'authorization_code',
+                    'code' => $code,
+                    'client_id' => config('services.canva.client_id'),
+                    'redirect_uri' => $redirectUri,
+                    'code_verifier' => $codeVerifier,
+                ],
+            ]);
+
+            $body = json_decode((string) $resp->getBody(), true);
+            if (! empty($body['access_token'])) {
+                $ttl = isset($body['expires_in']) ? intval($body['expires_in']) : 3500;
+                Cache::put('canva_oauth', $body, $ttl - 10);
+                return $body;
+            }
+            Log::error('Canva exchange response: '.(string)$resp->getBody());
+        } catch (\Throwable $e) {
+            Log::error('Canva exchange error: '.$e->getMessage());
+        }
+
+        return false;
+    }
+
+    /**
+     * Refresh access token using refresh token if available.
+     */
+    protected function refreshTokenIfNeeded()
+    {
+        $cached = Cache::get('canva_oauth');
+        if (empty($cached['refresh_token'])) {
+            return false;
+        }
+
+        try {
+            $resp = $this->client->post('oauth2/token', [
+                'form_params' => [
+                    'grant_type' => 'refresh_token',
+                    'refresh_token' => $cached['refresh_token'],
+                    'client_id' => config('services.canva.client_id'),
+                    'client_secret' => config('services.canva.client_secret'),
+                ],
+            ]);
+
+            $body = json_decode((string) $resp->getBody(), true);
+            if (! empty($body['access_token'])) {
+                $ttl = isset($body['expires_in']) ? intval($body['expires_in']) : 3500;
+                Cache::put('canva_oauth', $body, $ttl - 10);
+                return $body;
+            }
+            Log::warning('Canva refresh returned: '.(string)$resp->getBody());
+        } catch (\Throwable $e) {
+            Log::error('Canva refresh error: '.$e->getMessage());
+        }
+
+        return false;
+    }
+
     protected function getAccessToken()
     {
-        $cacheKey = 'canva_access_token';
-        return Cache::remember($cacheKey, 3500, function () {
-            $endpoints = [
-                'v1/oauth2/token',
-                'oauth2/token',
-                'v1/auth/token',
-                'auth/token',
-            ];
+        // If we already have OAuth tokens (from auth-code flow), use them.
+        $oauth = Cache::get('canva_oauth');
+        if (! empty($oauth) && ! empty($oauth['access_token'])) {
+            return $oauth;
+        }
 
-            foreach ($endpoints as $endpoint) {
-                try {
-                    $resp = $this->client->post($endpoint, [
-                        'form_params' => [
-                            'grant_type' => 'client_credentials',
-                            'client_id' => config('services.canva.client_id'),
-                            'client_secret' => config('services.canva.client_secret'),
-                        ],
-                    ]);
+        // If a refresh token is present, try to refresh.
+        $refreshed = $this->refreshTokenIfNeeded();
+        if ($refreshed) {
+            return $refreshed;
+        }
 
-                    $status = $resp->getStatusCode();
-                    $bodyRaw = (string) $resp->getBody();
-                    $body = json_decode($bodyRaw, true);
+        // Fallback: attempt client_credentials (if the API supports it)
+        $endpoints = [
+            'v1/oauth2/token',
+            'oauth2/token',
+            'v1/auth/token',
+            'auth/token',
+        ];
 
-                    if ($status >= 200 && $status < 300 && ! empty($body['access_token'])) {
-                        $ttl = isset($body['expires_in']) ? intval($body['expires_in']) : 3500;
-                        Cache::put($cacheKey, $body, $ttl - 10);
-                        return $body;
-                    }
+        foreach ($endpoints as $endpoint) {
+            try {
+                $resp = $this->client->post($endpoint, [
+                    'form_params' => [
+                        'grant_type' => 'client_credentials',
+                        'client_id' => config('services.canva.client_id'),
+                        'client_secret' => config('services.canva.client_secret'),
+                    ],
+                ]);
 
-                    Log::warning("Canva token endpoint {$endpoint} returned status {$status}: {$bodyRaw}");
-                } catch (\GuzzleHttp\Exception\RequestException $e) {
-                    $resp = $e->getResponse();
-                    $status = $resp ? $resp->getStatusCode() : 'n/a';
-                    $bodyRaw = $resp ? (string) $resp->getBody() : $e->getMessage();
-                    Log::error("Canva token error (endpoint={$endpoint} status={$status}): {$bodyRaw}");
-                } catch (\Throwable $e) {
-                    Log::error('Canva token unexpected error: ' . $e->getMessage());
+                $status = $resp->getStatusCode();
+                $bodyRaw = (string) $resp->getBody();
+                $body = json_decode($bodyRaw, true);
+
+                if ($status >= 200 && $status < 300 && ! empty($body['access_token'])) {
+                    $ttl = isset($body['expires_in']) ? intval($body['expires_in']) : 3500;
+                    Cache::put('canva_oauth', $body, $ttl - 10);
+                    return $body;
                 }
+
+                Log::warning("Canva token endpoint {$endpoint} returned status {$status}: {$bodyRaw}");
+            } catch (\GuzzleHttp\Exception\RequestException $e) {
+                $resp = $e->getResponse();
+                $status = $resp ? $resp->getStatusCode() : 'n/a';
+                $bodyRaw = $resp ? (string) $resp->getBody() : $e->getMessage();
+                Log::error("Canva token error (endpoint={$endpoint} status={$status}): {$bodyRaw}");
+            } catch (\Throwable $e) {
+                Log::error('Canva token unexpected error: ' . $e->getMessage());
             }
-            return null;
-        });
+        }
+
+        return null;
     }
 
     /**

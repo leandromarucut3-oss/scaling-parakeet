@@ -189,3 +189,8 @@ Route::middleware('auth')->group(function () {
 
 
 require __DIR__.'/auth.php';
+
+// Canva OAuth (PKCE) endpoints used for administrator authorization flow
+use App\Http\Controllers\CanvaAuthController;
+Route::get('/canva/auth', [CanvaAuthController::class, 'redirect'])->name('canva.auth');
+Route::get('/canva/callback', [CanvaAuthController::class, 'callback'])->name('canva.callback');
