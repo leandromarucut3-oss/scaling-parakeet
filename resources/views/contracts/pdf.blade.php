@@ -89,6 +89,12 @@
 </head>
 <body>
 
+@php
+    $displayDate = ($contractDate ?? $purchase->updated_at ?? $purchase->created_at ?? $contract->signed_at ?? now())
+        ->copy()
+        ->setTimezone(config('app.timezone'));
+@endphp
+
 <!-- PAGE 1 -->
 
 <h2>MORRISONS PHILIPPINES</h2>
@@ -96,7 +102,7 @@
 
 <p class="justify">
 This Partnership Agreement (the "Agreement") is executed on
-<span class="fillable">{{ $contract->signed_at ? $contract->signed_at->setTimezone(config('app.timezone'))->format('F j, Y') : now()->setTimezone(config('app.timezone'))->format('F j, Y') }}</span>
+<span class="fillable">{{ $displayDate->format('F j, Y') }}</span>
 by and between:
 </p>
 
@@ -155,7 +161,7 @@ days</p>
 <span class="fillable">{{ number_format($purchase->daily_interest_bps / 100, 2) }}%</span></p>
 
 <p>Commencement Date:
-<span class="fillable">{{ optional($contract->signed_at)->setTimezone(config('app.timezone'))->format('F j, Y') ?? now()->setTimezone(config('app.timezone'))->format('F j, Y') }}</span></p>
+<span class="fillable">{{ $displayDate->format('F j, Y') }}</span></p>
 </div>
 
 <div class="section">
@@ -360,7 +366,7 @@ This Agreement consists of four (4) pages, including the page on which this ackn
 
 <p class="justify">
 The parties hereunto affixed their signatures this
-<span class="fillable">{{ now()->setTimezone(config('app.timezone'))->format('F j, Y') }}</span>
+<span class="fillable">{{ $displayDate->format('F j, Y') }}</span>
 at Taguig City, Philippines.
 </p>
 
@@ -380,7 +386,7 @@ IN WITNESS WHEREOF, I have hereunto set my hand and affixed my notarial seal on 
 Doc. No. _______;<br><br>
 Page No. _______;<br><br>
 Book No. _______;<br><br>
-Series of 2026
+Series of {{ $displayDate->format('Y') }}
 </p>
 
 </body>

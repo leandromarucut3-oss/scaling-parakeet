@@ -3,8 +3,10 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Session\TokenMismatchException;
 use Throwable;
 
@@ -30,7 +32,7 @@ class Handler extends ExceptionHandler
             //
         });
 
-        $this->renderable(function (TokenMismatchException $e, Request $request): RedirectResponse {
+        $this->renderable(function (TokenMismatchException $e, Request $request): JsonResponse|RedirectResponse|Response {
             if ($request->expectsJson()) {
                 return response()->json([
                     'message' => 'Your session has expired. Please refresh the page and try again.',

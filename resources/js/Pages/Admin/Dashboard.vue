@@ -1,8 +1,8 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 
 const props = defineProps({
     users: {
@@ -16,6 +16,25 @@ const props = defineProps({
 });
 
 const search = ref('');
+let usersRefreshTimer = null;
+
+const refreshUsers = () => {
+    router.reload({
+        only: ['users'],
+        preserveScroll: true,
+        preserveState: true,
+    });
+};
+
+onMounted(() => {
+    usersRefreshTimer = window.setInterval(refreshUsers, 30000);
+});
+
+onUnmounted(() => {
+    if (usersRefreshTimer) {
+        window.clearInterval(usersRefreshTimer);
+    }
+});
 
 const currency = new Intl.NumberFormat('en-US', {
     style: 'currency',

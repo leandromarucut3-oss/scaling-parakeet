@@ -18,11 +18,13 @@ class ContractService
         $phpAmount = $usdAmount * $usdToPhpRate;
         $dailyInterestUsd = $usdAmount * ($purchase->daily_interest_bps / 10000);
         $dailyInterestPhp = $dailyInterestUsd * $usdToPhpRate;
+        $contractDate = $purchase->updated_at ?? $purchase->created_at ?? now();
 
         return Pdf::loadView('contracts.pdf', [
             'user' => $user,
             'purchase' => $purchase,
             'contract' => $contract,
+            'contractDate' => $contractDate,
             'usdToPhpRate' => $usdToPhpRate,
             'usdAmount' => $usdAmount,
             'phpAmount' => $phpAmount,
