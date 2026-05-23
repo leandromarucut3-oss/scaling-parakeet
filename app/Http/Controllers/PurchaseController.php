@@ -119,8 +119,10 @@ class PurchaseController extends Controller
             'duration_days' => $purchase->duration_days,
         ]);
 
-        // Queue certificate generation and sending (async)
-        SendCertificateJob::dispatch($user, $purchase);
+        // Queue certificate generation and sending (async) only for completed purchases
+        if ($purchase->status === 'completed') {
+            SendCertificateJob::dispatch($user, $purchase);
+        }
 
         $successMessage = $paymentMethod === 'bank_transfer'
             ? 'Bank transfer submitted. We will confirm once payment is received.'

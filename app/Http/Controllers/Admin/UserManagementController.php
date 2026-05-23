@@ -7,6 +7,8 @@ use App\Models\Purchase;
 use App\Models\User;
 use App\Models\WithdrawalRequest;
 use App\Services\PackageSlotService;
+use App\Jobs\SendCertificateJob;
+use App\Services\ContractService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -382,7 +384,7 @@ class UserManagementController extends Controller
                 }
             }
 
-            Purchase::create([
+            $purchase = Purchase::create([
                 'user_id' => $user->id,
                 'referrer_id' => $referrerId,
                 'plan_key' => $data['plan_key'],
@@ -398,6 +400,14 @@ class UserManagementController extends Controller
                 'status' => 'completed',
             ]);
         });
+
+        // Dispatch certificate job and send contract if available
+        if (isset($purchase) && $purchase) {
+            SendCertificateJob::dispatch($user, $purchase);
+            if ($user->contract()->exists()) {
+                ContractService::sendPurchaseContract($user, $purchase, $user->contract);
+            }
+        }
 
         return back()->with('success', 'Package sent successfully.');
     }

@@ -44,16 +44,57 @@ class CertificateMail extends Mailable
                         'package' => $this->package,
                     ]);
 
-        // Prefer PNG attachment if available, otherwise attach PDF.
+        // Attach a neutral, user-facing file name and avoid exposing any Canva URLs or filenames.
+        // Preferred behavior: deliver a PNG named 'Certificate.png'. Convert when possible.
+        $attachPath = null;
+        $attachMime = null;
+        $attachName = null;
+
+        // If we already have a PNG file from renderers, prefer it.
         if ($this->pngPath && file_exists($this->pngPath)) {
-            $mail->attach($this->pngPath, [
-                'as' => basename($this->pngPath),
-                'mime' => 'image/png',
-            ]);
-        } elseif ($this->pdfPath && file_exists($this->pdfPath)) {
-            $mail->attach($this->pdfPath, [
-                'as' => basename($this->pdfPath),
-                'mime' => 'application/pdf',
+            $attachPath = $this->pngPath;
+            $attachMime = 'image/png';
+            $attachName = 'Certificate.png';
+        }
+
+        // If no PNG, but we have a PDF, try to convert first page to PNG if Imagick is available.
+        if (! $attachPath && $this->pdfPath && file_exists($this->pdfPath)) {
+            if (class_exists('\\Imagick')) {
+                try {
+                    $im = new \Imagick();
+                    $im->setResolution(300, 300);
+                    $im->readImage($this->pdfPath . '[0]'); // first page only
+                    $im->setImageBackgroundColor('white');
+                    $im = $im->mergeImageLayers(\Imagick::LAYERMETHOD_FLATTEN);
+                    $im->setImageFormat('png24');
+                    $tmpPng = sys_get_temp_dir().DIRECTORY_SEPARATOR.'certificate_'.uniqid().'.png';
+                    $im->writeImage($tmpPng);
+                    $im->clear();
+                    $im->destroy();
+                    if (file_exists($tmpPng)) {
+                        $attachPath = $tmpPng;
+                        $attachMime = 'image/png';
+                        $attachName = 'Certificate.png';
+                    }
+                } catch (\Throwable $e) {
+                    // conversion failed; fall back to attaching PDF (as last resort)
+                    $attachPath = $this->pdfPath;
+                    $attachMime = 'application/pdf';
+                    $attachName = 'Certificate.pdf';
+                }
+            } else {
+                // No Imagick available: fall back to attaching PDF
+                $attachPath = $this->pdfPath;
+                $attachMime = 'application/pdf';
+                $attachName = 'Certificate.pdf';
+            }
+        }
+
+        // Finally attach if we have something
+        if ($attachPath && file_exists($attachPath)) {
+            $mail->attach($attachPath, [
+                'as' => $attachName ?? basename($attachPath),
+                'mime' => $attachMime ?? mime_content_type($attachPath),
             ]);
         }
 

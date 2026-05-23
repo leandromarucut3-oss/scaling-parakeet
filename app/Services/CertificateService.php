@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Mail\CertificateMail;
+use App\Services\CanvaService;
 use Illuminate\Support\Facades\Mail;
 
 class CertificateService
@@ -34,9 +35,93 @@ class CertificateService
         $pdfPath = $dir.DIRECTORY_SEPARATOR.$base.'.pdf';
         $pngPath = $dir.DIRECTORY_SEPARATOR.$base.'.png';
 
-        // Render Blade to HTML and write to temporary file
-        $html = view('certificates.membership', $data)->render();
+        // Attempt to generate via Canva if configured (preferred)
         $tmpHtml = $dir.DIRECTORY_SEPARATOR.$base.'.html';
+
+        // Resolve template id: package-specific, mapped, or default
+        $canvaTemplate = null;
+        if (is_object($package) && ! empty($package->canva_template_id)) {
+            $canvaTemplate = $package->canva_template_id;
+        } elseif (is_array($package) && ! empty($package['canva_template_id'])) {
+            $canvaTemplate = $package['canva_template_id'];
+        } else {
+            // try mapping by package slug or name
+            $map = config('canva.template_map', []);
+            $key = null;
+            if (is_object($package) && ! empty($package->slug)) {
+                $key = $package->slug;
+            } elseif (is_array($package) && ! empty($package['slug'])) {
+                $key = $package['slug'];
+            } elseif (is_object($package) && ! empty($package->name)) {
+                $key = strtolower(str_replace(' ', '_', $package->name));
+            } elseif (is_array($package) && ! empty($package['name'])) {
+                $key = strtolower(str_replace(' ', '_', $package['name']));
+            }
+
+            if ($key && isset($map[$key])) {
+                $canvaTemplate = $map[$key];
+            }
+
+            if (! $canvaTemplate) {
+                $canvaTemplate = config('canva.default_template') ?: config('services.canva.template_id');
+            }
+        }
+
+        if ($canvaTemplate) {
+            try {
+                $canva = new CanvaService();
+
+                // Build variables according to field map
+                $fieldMap = config('canva.field_map', []);
+                $vars = [];
+
+                foreach ($fieldMap as $localKey => $canvaKey) {
+                    $value = null;
+                    if (isset($data[$localKey])) {
+                        $value = $data[$localKey];
+                    } elseif (is_object($package) && isset($package->{$localKey})) {
+                        $value = $package->{$localKey};
+                    } elseif (is_array($package) && isset($package[$localKey])) {
+                        $value = $package[$localKey];
+                    } elseif (is_object($user) && isset($user->{$localKey})) {
+                        $value = $user->{$localKey};
+                    } elseif (is_array($user) && isset($user[$localKey])) {
+                        $value = $user[$localKey];
+                    }
+
+                    // Fallbacks for common keys
+                    if ($localKey === 'name' && empty($value)) {
+                        $value = $user->name ?? $user->email ?? 'Recipient';
+                    }
+                    if ($localKey === 'package' && empty($value)) {
+                        $value = $package->name ?? ($package['name'] ?? '');
+                    }
+
+                    $vars[$canvaKey] = $value;
+                }
+
+                $canvaResult = $canva->exportFromTemplate($canvaTemplate, $vars, $dir, $base);
+                if ($canvaResult && file_exists($canvaResult[0])) {
+                    $pdfPath = $canvaResult[0];
+                    $pngPath = $canvaResult[1] ?? null;
+
+                    // Email the pdf/png
+                    Mail::to($user->email)->send(new CertificateMail($user, $package, $pdfPath, $pngPath));
+
+                    // Cleanup tmp html if it exists
+                    if (file_exists($tmpHtml)) {
+                        @unlink($tmpHtml);
+                    }
+
+                    return [$pdfPath, $pngPath];
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('Canva generation failed: '.$e->getMessage());
+            }
+        }
+
+        // Render Blade to HTML and write to temporary file (fallback)
+        $html = view('certificates.membership', $data)->render();
         file_put_contents($tmpHtml, $html);
 
         // Try Puppeteer renderer (node script)

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Purchase;
 use App\Models\User;
 use App\Services\ContractService;
+use App\Jobs\SendCertificateJob;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -122,6 +123,8 @@ class DepositManagementController extends Controller
 
         if ($approveContract && $approvedPurchase && $approvedUser) {
             ContractService::sendPurchaseContract($approvedUser, $approvedPurchase, $approveContract);
+            // Queue certificate generation and sending now that purchase is approved
+            SendCertificateJob::dispatch($approvedUser, $approvedPurchase);
         }
 
         return back();

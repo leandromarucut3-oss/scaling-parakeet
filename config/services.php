@@ -31,4 +31,12 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'canva' => [
+        'client_id' => env('CANVA_CLIENT_ID'),
+        'client_secret' => env('CANVA_CLIENT_SECRET'),
+        'base_uri' => env('CANVA_BASE_URI', 'https://api.canva.com/'),
+        // Optional: a template id to use for certificate generation
+        'template_id' => env('CANVA_TEMPLATE_ID'),
+    ],
+
 ];
