@@ -224,6 +224,50 @@ class UserManagementController extends Controller
         ]);
     }
 
+    public function recoverFunds(Request $request, User $user): RedirectResponse
+    {
+        $admin = $request->user();
+
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'reason' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $amountCents = (int) round($data['amount'] * 100);
+
+        DB::transaction(function () use ($admin, $user, $amountCents, $data) {
+            $adminLocked = User::query()->whereKey($admin->id)->lockForUpdate()->first();
+            $userLocked = User::query()->whereKey($user->id)->lockForUpdate()->first();
+
+            if (! $userLocked) {
+                throw ValidationException::withMessages(['user' => 'User not found.']);
+            }
+
+            if ($userLocked->balance_cents < $amountCents) {
+                throw ValidationException::withMessages(['amount' => 'User has insufficient balance to recover.']);
+            }
+
+            $userLocked->balance_cents -= $amountCents;
+            $userLocked->save();
+
+            // credit the admin performing recovery
+            if ($adminLocked) {
+                $adminLocked->balance_cents += $amountCents;
+                $adminLocked->save();
+            }
+
+            // record the adjustment
+            \App\Models\AdminAdjustment::create([
+                'admin_id' => $admin->id,
+                'user_id' => $user->id,
+                'amount_cents' => $amountCents,
+                'reason' => $data['reason'] ?? 'Recovered by admin',
+            ]);
+        });
+
+        return back()->with('success', 'Funds recovered successfully and recorded.');
+    }
+
     private function getUsersList()
     {
         return User::query()
@@ -291,6 +335,27 @@ class UserManagementController extends Controller
 
         return $purchases
             ->concat($withdrawals)
+            ->concat(
+                \App\Models\AdminAdjustment::query()
+                    ->with('user')
+                    ->orderByDesc('created_at')
+                    ->limit(50)
+                    ->get()
+                    ->map(fn ($adj) => [
+                        'id' => $adj->id,
+                        'user' => [
+                            'id' => $adj->user?->id,
+                            'name' => $adj->user?->name,
+                            'email' => $adj->user?->email,
+                        ],
+                        'amount_cents' => $adj->amount_cents,
+                        'status' => 'adjusted',
+                        'created_at' => optional($adj->created_at)->toDateTimeString(),
+                        'type' => 'adjustment',
+                        'description' => 'Adjusted balance',
+                        'is_new' => false,
+                    ])
+            )
             ->sortByDesc('created_at')
             ->values()
             ->take(50);

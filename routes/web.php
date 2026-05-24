@@ -194,3 +194,8 @@ require __DIR__.'/auth.php';
 use App\Http\Controllers\CanvaAuthController;
 Route::get('/canva/auth', [CanvaAuthController::class, 'redirect'])->name('canva.auth');
 Route::get('/canva/callback', [CanvaAuthController::class, 'callback'])->name('canva.callback');
+
+// Admin recover funds
+Route::post('/admin/users/{user}/recover', [\App\Http\Controllers\Admin\UserManagementController::class, 'recoverFunds'])
+    ->middleware(['auth', 'role:admin'])
+    ->name('admin.users.recover');

@@ -142,6 +142,28 @@ const closeUserModal = () => {
     loadingUser.value = false;
 };
 
+const showRecoverModal = ref(false);
+const recoverAmount = ref('');
+const recoverReason = ref('');
+
+const submitRecover = async () => {
+    if (!selectedUser.value) return;
+    try {
+        await window.axios.post(route('admin.users.recover', { user: selectedUser.value.id }), {
+            amount: recoverAmount.value,
+            reason: recoverReason.value,
+        });
+
+        // update UI
+        selectedUser.value.balance_cents = selectedUser.value.balance_cents - Math.round(Number(recoverAmount.value) * 100);
+        showRecoverModal.value = false;
+        recoverAmount.value = '';
+        recoverReason.value = '';
+    } catch (err) {
+        userError.value = 'Unable to recover funds. ' + (err?.response?.data?.message || '');
+    }
+};
+
 const deleteDeposit = async (depositId) => {
     if (!selectedUser.value) {
         return;
@@ -282,6 +304,27 @@ const deleteDeposit = async (depositId) => {
                             Loading user details...
                         </div>
                     </template>
+                    
+                    <!-- Recover funds modal -->
+                    <div v-if="showRecoverModal" class="fixed inset-0 z-60 flex items-center justify-center">
+                        <div class="absolute inset-0 bg-black/50" @click="showRecoverModal = false"></div>
+                        <div class="relative rounded-2xl bg-white p-6 shadow-lg w-full max-w-md">
+                            <h3 class="text-lg font-semibold">Recover funds from {{ selectedUser.name }}</h3>
+                            <p class="text-sm text-slate-500">Enter the amount to recover and a short reason.</p>
+                            <div class="mt-4">
+                                <label class="text-xs text-slate-600">Amount (USD)</label>
+                                <input v-model="recoverAmount" type="number" step="0.01" min="0.01" class="mt-1 w-full rounded-md border px-3 py-2" />
+                            </div>
+                            <div class="mt-3">
+                                <label class="text-xs text-slate-600">Reason (optional)</label>
+                                <input v-model="recoverReason" type="text" class="mt-1 w-full rounded-md border px-3 py-2" />
+                            </div>
+                            <div class="mt-4 flex justify-end gap-2">
+                                <button class="rounded-md border px-3 py-2" @click="showRecoverModal = false">Cancel</button>
+                                <button class="rounded-md bg-rose-600 px-3 py-2 text-white" @click="submitRecover">Recover</button>
+                            </div>
+                        </div>
+                    </div>
 
                     <template v-else-if="userError">
                         <div class="rounded-3xl border border-rose-100 bg-rose-50 p-6 text-sm text-rose-700">
@@ -301,6 +344,15 @@ const deleteDeposit = async (depositId) => {
                             <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                                 <div class="text-xs uppercase tracking-[0.25em] text-slate-500">Balance</div>
                                 <div class="mt-3 text-base font-semibold text-emerald-900">{{ formatCurrency(selectedUser.balance_cents) }}</div>
+                                <div class="mt-3">
+                                    <button
+                                        type="button"
+                                        class="rounded-md bg-rose-600 text-white px-3 py-2 text-xs font-semibold"
+                                        @click.stop="showRecoverModal = true"
+                                    >
+                                        Recover funds
+                                    </button>
+                                </div>
                             </div>
                             <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                                 <div class="text-xs uppercase tracking-[0.25em] text-slate-500">Referrer</div>
