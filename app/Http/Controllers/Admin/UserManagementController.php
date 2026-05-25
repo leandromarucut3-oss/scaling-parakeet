@@ -216,26 +216,32 @@ class UserManagementController extends Controller
 
     public function blockUserIp(Request $request, User $user): JsonResponse
     {
+        $data = $request->validate([
+            'ip_address' => ['nullable', 'ip'],
+        ]);
+
         if ($user->hasRole('admin')) {
             return response()->json([
                 'message' => 'Admin accounts cannot be restricted from this action.',
             ], 422);
         }
 
-        if (! $user->last_ip_address) {
+        $ipAddress = $data['ip_address'] ?? $user->last_ip_address;
+
+        if (! $ipAddress) {
             return response()->json([
                 'message' => 'This user has no recorded IP address yet.',
             ], 422);
         }
 
-        if ($user->last_ip_address === $request->ip()) {
+        if ($ipAddress === $request->ip()) {
             return response()->json([
                 'message' => 'This IP matches your current admin IP, so it was not blocked.',
             ], 422);
         }
 
         BlockedIp::query()->updateOrCreate(
-            ['ip_address' => $user->last_ip_address],
+            ['ip_address' => $ipAddress],
             [
                 'user_id' => $user->id,
                 'blocked_by_user_id' => $request->user()->id,
@@ -245,7 +251,7 @@ class UserManagementController extends Controller
 
         return response()->json([
             'message' => 'User IP address has been restricted.',
-            'ip_address' => $user->last_ip_address,
+            'ip_address' => $ipAddress,
         ]);
     }
 

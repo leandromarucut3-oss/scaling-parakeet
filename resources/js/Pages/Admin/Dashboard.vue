@@ -172,16 +172,26 @@ const submitRecover = async () => {
 };
 
 const blockUserIp = async () => {
-    if (!selectedUser.value?.can_restrict_ip || !selectedUser.value?.last_ip_address || selectedUser.value?.is_ip_blocked) {
+    if (!selectedUser.value?.can_restrict_ip || selectedUser.value?.is_ip_blocked) {
         return;
     }
 
-    if (!window.confirm(`Restrict IP ${selectedUser.value.last_ip_address} from opening the website?`)) {
+    const ipAddress = selectedUser.value.last_ip_address || window.prompt('No IP has been recorded for this user yet. Enter the IP address to restrict:');
+
+    if (!ipAddress) {
+        return;
+    }
+
+    if (!window.confirm(`Restrict IP ${ipAddress} from opening the website?`)) {
         return;
     }
 
     try {
-        await window.axios.post(route('admin.users.block-ip', { user: selectedUser.value.id }));
+        const response = await window.axios.post(route('admin.users.block-ip', { user: selectedUser.value.id }), {
+            ip_address: ipAddress,
+        });
+
+        selectedUser.value.last_ip_address = response.data.ip_address || ipAddress;
         selectedUser.value.is_ip_blocked = true;
     } catch (err) {
         userError.value = err?.response?.data?.message || 'Unable to restrict this IP address.';
@@ -370,7 +380,7 @@ const deleteDeposit = async (depositId) => {
                                     v-if="selectedUser.can_restrict_ip"
                                     type="button"
                                     class="mt-3 rounded-md bg-slate-900 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-300"
-                                    :disabled="!selectedUser.last_ip_address || selectedUser.is_ip_blocked"
+                                    :disabled="selectedUser.is_ip_blocked"
                                     @click.stop="blockUserIp"
                                 >
                                     {{ selectedUser.is_ip_blocked ? 'IP restricted' : 'Restrict IP' }}
