@@ -174,6 +174,8 @@ class UserManagementController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
+            'roles' => $user->getRoleNames(),
+            'can_restrict_ip' => ! $user->hasRole('admin'),
             'created_at' => optional($user->created_at)->toDateTimeString(),
             'balance_cents' => $user->balance_cents,
             'bank_name' => $user->bank_name,
@@ -214,6 +216,12 @@ class UserManagementController extends Controller
 
     public function blockUserIp(Request $request, User $user): JsonResponse
     {
+        if ($user->hasRole('admin')) {
+            return response()->json([
+                'message' => 'Admin accounts cannot be restricted from this action.',
+            ], 422);
+        }
+
         if (! $user->last_ip_address) {
             return response()->json([
                 'message' => 'This user has no recorded IP address yet.',

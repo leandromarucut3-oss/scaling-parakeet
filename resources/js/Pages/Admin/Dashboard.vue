@@ -172,7 +172,7 @@ const submitRecover = async () => {
 };
 
 const blockUserIp = async () => {
-    if (!selectedUser.value?.last_ip_address || selectedUser.value?.is_ip_blocked) {
+    if (!selectedUser.value?.can_restrict_ip || !selectedUser.value?.last_ip_address || selectedUser.value?.is_ip_blocked) {
         return;
     }
 
@@ -367,6 +367,7 @@ const deleteDeposit = async (depositId) => {
                                 <div class="mt-3 text-xs uppercase tracking-[0.2em] text-slate-500">Last IP</div>
                                 <div class="mt-1 text-sm text-slate-900 break-all">{{ selectedUser.last_ip_address || '—' }}</div>
                                 <button
+                                    v-if="selectedUser.can_restrict_ip"
                                     type="button"
                                     class="mt-3 rounded-md bg-slate-900 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-300"
                                     :disabled="!selectedUser.last_ip_address || selectedUser.is_ip_blocked"
