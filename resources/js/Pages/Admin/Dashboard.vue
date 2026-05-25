@@ -379,7 +379,7 @@ const deleteDeposit = async (depositId) => {
                             </div>
                         </div>
 
-                        <div class="mt-6 grid gap-6 lg:grid-cols-2">
+                        <div class="mt-6 grid gap-6 xl:grid-cols-3">
                             <section class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
                                 <div class="mb-4 flex items-center justify-between">
                                     <div>
@@ -454,6 +454,52 @@ const deleteDeposit = async (depositId) => {
                                             </tr>
                                             <tr v-if="!selectedUser.withdrawal_history.length">
                                                 <td class="px-3 py-6 text-center text-sm text-slate-500" colspan="4">No withdrawal history available.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+
+                            <section class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+                                <div class="mb-4 flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-slate-900">Transfer funds history</h3>
+                                        <p class="text-xs text-slate-500">Recent sent and received transfers for this user.</p>
+                                    </div>
+                                </div>
+                                <div class="overflow-hidden rounded-3xl border border-slate-200">
+                                    <table class="w-full border-collapse text-sm">
+                                        <thead class="bg-slate-50 text-slate-800">
+                                            <tr>
+                                                <th class="px-3 py-3 text-left uppercase tracking-[0.18em] text-[0.65rem]">Date</th>
+                                                <th class="px-3 py-3 text-left uppercase tracking-[0.18em] text-[0.65rem]">Amount</th>
+                                                <th class="px-3 py-3 text-left uppercase tracking-[0.18em] text-[0.65rem]">Type</th>
+                                                <th class="px-3 py-3 text-left uppercase tracking-[0.18em] text-[0.65rem]">User</th>
+                                                <th class="px-3 py-3 text-left uppercase tracking-[0.18em] text-[0.65rem]">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="transfer in selectedUser.transfer_history" :key="`transfer-${transfer.id}`" class="border-t border-slate-200">
+                                                <td class="px-3 py-3 text-slate-700">
+                                                    <div>{{ formatTimeAgo(transfer.created_at) }}</div>
+                                                    <div class="text-xs text-slate-500">{{ formatDate(transfer.created_at) }}</div>
+                                                </td>
+                                                <td class="px-3 py-3 font-semibold text-emerald-900">{{ formatCurrency(transfer.amount_cents) }}</td>
+                                                <td class="px-3 py-3 uppercase text-xs tracking-[0.18em] text-slate-600">{{ transfer.direction }}</td>
+                                                <td class="px-3 py-3 text-slate-700">
+                                                    <template v-if="transfer.direction === 'sent'">
+                                                        <div>{{ transfer.recipient?.name || '—' }}</div>
+                                                        <div v-if="transfer.recipient?.email" class="text-xs text-slate-500">{{ transfer.recipient.email }}</div>
+                                                    </template>
+                                                    <template v-else>
+                                                        <div>{{ transfer.sender?.name || '—' }}</div>
+                                                        <div v-if="transfer.sender?.email" class="text-xs text-slate-500">{{ transfer.sender.email }}</div>
+                                                    </template>
+                                                </td>
+                                                <td class="px-3 py-3 uppercase text-xs tracking-[0.18em] text-slate-600">{{ transfer.status }}</td>
+                                            </tr>
+                                            <tr v-if="!selectedUser.transfer_history.length">
+                                                <td class="px-3 py-6 text-center text-sm text-slate-500" colspan="5">No transfer funds history available.</td>
                                             </tr>
                                         </tbody>
                                     </table>

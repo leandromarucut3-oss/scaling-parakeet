@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Purchase;
+use App\Models\Transfer;
 use App\Models\User;
 use App\Models\WithdrawalRequest;
 use App\Services\PackageSlotService;
@@ -135,6 +136,31 @@ class UserManagementController extends Controller
                 'bank_account_number' => $withdrawal->bank_account_number,
             ]);
 
+        $transferHistory = Transfer::query()
+            ->with(['sender', 'recipient'])
+            ->where('sender_id', $user->id)
+            ->orWhere('recipient_id', $user->id)
+            ->orderByDesc('created_at')
+            ->limit(20)
+            ->get()
+            ->map(fn (Transfer $transfer) => [
+                'id' => $transfer->id,
+                'amount_cents' => $transfer->amount_cents,
+                'status' => $transfer->status,
+                'created_at' => optional($transfer->created_at)->toDateTimeString(),
+                'direction' => $transfer->sender_id === $user->id ? 'sent' : 'received',
+                'sender' => $transfer->sender ? [
+                    'id' => $transfer->sender->id,
+                    'name' => $transfer->sender->name,
+                    'email' => $transfer->sender->email,
+                ] : null,
+                'recipient' => $transfer->recipient ? [
+                    'id' => $transfer->recipient->id,
+                    'name' => $transfer->recipient->name,
+                    'email' => $transfer->recipient->email,
+                ] : null,
+            ]);
+
         return response()->json([
             'id' => $user->id,
             'name' => $user->name,
@@ -151,6 +177,7 @@ class UserManagementController extends Controller
             ] : null,
             'deposit_history' => $depositHistory,
             'withdrawal_history' => $withdrawalHistory,
+            'transfer_history' => $transferHistory,
         ]);
     }
 
@@ -398,6 +425,13 @@ class UserManagementController extends Controller
 
             $adminLocked->save();
             $recipientLocked->save();
+
+            Transfer::create([
+                'sender_id' => $adminLocked->id,
+                'recipient_id' => $recipientLocked->id,
+                'amount_cents' => $amountCents,
+                'status' => 'completed',
+            ]);
         });
 
         Log::info('Admin transfer completed', [
