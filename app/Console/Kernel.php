@@ -13,6 +13,10 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('purchases:accrue-interest')->dailyAt('00:00');
+        $schedule->command('slots:send-availability-emails')
+            ->dailyAt('08:00')
+            ->timezone('Asia/Manila')
+            ->withoutOverlapping();
     }
 
     /**

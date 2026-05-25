@@ -19,4 +19,7 @@ php artisan view:cache
 # turn off maintenance mode to bring the site live
 php artisan up
 
+# send the current remaining slot availability email after deployment
+php artisan slots:send-availability-emails
+
 echo "🚀 Deployment successfully completed!"
