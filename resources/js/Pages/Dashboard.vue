@@ -119,13 +119,13 @@ const submitWithdrawal = () => {
                             Account summary
                         </div>
                         <div class="mt-3 text-lg font-semibold text-emerald-100">Available balance</div>
-                        <div class="mt-2 text-4xl font-bold sm:text-5xl">{{ formattedBalance }}</div>
-                        <div v-if="user" class="mt-3 text-xs text-emerald-200">
+                        <div class="mt-2 text-[clamp(2.2rem,10vw,3rem)] font-bold leading-none sm:text-5xl">{{ formattedBalance }}</div>
+                        <div v-if="user" class="mt-3 break-words text-[11px] leading-4 text-emerald-200 sm:text-xs">
                             Welcome back, <span class="font-semibold text-white">{{ user.name }}</span>
                             <span class="text-emerald-200">({{ user.email }})</span>
                         </div>
 
-                        <div class="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                        <div class="mt-5 flex flex-row flex-wrap items-center gap-2">
                             <Link
                                 :href="route('shares.buy')"
                                 class="inline-flex items-center rounded-md bg-white px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-900 transition hover:bg-emerald-50"
@@ -162,36 +162,36 @@ const submitWithdrawal = () => {
                     </div>
                 </div>
 
-                <div class="grid gap-5 md:grid-cols-3">
-                    <div class="rounded-2xl bg-white/95 p-5 shadow-md ring-1 ring-emerald-100">
-                        <div class="text-[11px] font-semibold uppercase tracking-[0.15em] text-emerald-700">
+                <div class="grid grid-cols-3 gap-3 sm:gap-5">
+                    <div class="flex min-h-[136px] min-w-0 flex-col rounded-xl bg-white/95 p-3 shadow-md ring-1 ring-emerald-100 sm:min-h-0 sm:rounded-2xl sm:p-5">
+                        <div class="min-h-[2rem] break-words text-[0.58rem] font-semibold uppercase leading-4 tracking-[0.08em] text-emerald-700 sm:min-h-0 sm:text-[11px] sm:tracking-[0.15em]">
                             Total invested capital
                         </div>
-                        <div class="mt-2 text-2xl font-bold text-emerald-950">{{ formattedTotalInvestment }}</div>
-                        <div class="mt-2 text-xs text-slate-500">Sum of all completed purchases.</div>
+                        <div class="mt-2 whitespace-nowrap text-[clamp(1rem,4.3vw,1.45rem)] font-bold leading-tight text-emerald-950 sm:text-2xl">{{ formattedTotalInvestment }}</div>
+                        <div class="mt-auto pt-2 text-[0.68rem] leading-4 text-slate-500 sm:mt-2 sm:pt-0 sm:text-xs">Sum of all completed purchases.</div>
                     </div>
 
-                    <div class="rounded-2xl bg-white/95 p-5 shadow-md ring-1 ring-emerald-100">
-                        <div class="text-[11px] font-semibold uppercase tracking-[0.15em] text-emerald-700">
+                    <div class="flex min-h-[136px] min-w-0 flex-col rounded-xl bg-white/95 p-3 shadow-md ring-1 ring-emerald-100 sm:min-h-0 sm:rounded-2xl sm:p-5">
+                        <div class="min-h-[2rem] break-words text-[0.58rem] font-semibold uppercase leading-4 tracking-[0.08em] text-emerald-700 sm:min-h-0 sm:text-[11px] sm:tracking-[0.15em]">
                             Portfolio value
                         </div>
-                        <div class="mt-2 text-2xl font-bold text-emerald-950">{{ formattedPortfolioValue }}</div>
-                        <div class="mt-2 text-xs text-slate-500">Balance plus invested capital.</div>
+                        <div class="mt-2 whitespace-nowrap text-[clamp(1rem,4.3vw,1.45rem)] font-bold leading-tight text-emerald-950 sm:text-2xl">{{ formattedPortfolioValue }}</div>
+                        <div class="mt-auto pt-2 text-[0.68rem] leading-4 text-slate-500 sm:mt-2 sm:pt-0 sm:text-xs">Balance plus invested capital.</div>
                     </div>
 
-                    <div class="relative overflow-hidden rounded-2xl bg-emerald-950 p-5 text-white shadow-lg">
+                    <div class="relative flex min-h-[136px] min-w-0 flex-col overflow-hidden rounded-xl bg-emerald-950 p-3 text-white shadow-lg sm:min-h-0 sm:rounded-2xl sm:p-5">
                         <img
                             :src="accountSummaryImage"
                             alt=""
                             class="absolute inset-0 h-full w-full object-cover object-center"
                         />
                         <div class="absolute inset-0 bg-emerald-950/70"></div>
-                        <div class="relative">
-                            <div class="text-[11px] font-semibold uppercase tracking-[0.15em] text-emerald-100">
+                        <div class="relative flex h-full flex-col">
+                            <div class="min-h-[2rem] break-words text-[0.58rem] font-semibold uppercase leading-4 tracking-[0.08em] text-emerald-100 sm:min-h-0 sm:text-[11px] sm:tracking-[0.15em]">
                                 Daily interest
                             </div>
-                            <div class="mt-2 text-2xl font-bold">{{ formattedDailyInterest }}</div>
-                            <div class="mt-2 text-xs text-emerald-100">
+                            <div class="mt-2 whitespace-nowrap text-[clamp(1rem,4.3vw,1.45rem)] font-bold leading-tight sm:text-2xl">{{ formattedDailyInterest }}</div>
+                            <div class="mt-auto pt-2 text-[0.68rem] leading-4 text-emerald-100 sm:mt-2 sm:pt-0 sm:text-xs">
                                 Total interest earned: <span class="font-semibold text-white">{{ formattedInterestEarned }}</span>
                             </div>
                         </div>
