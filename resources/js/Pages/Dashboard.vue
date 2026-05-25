@@ -13,6 +13,15 @@ const showBankNotice = ref(false);
 const showWithdrawModal = ref(false);
 const withdrawalSuccess = computed(() => page.props.flash?.withdrawal_success ?? '');
 const accountSummaryImage = 'https://my.morrisons.com/globalassets/hubs/more-reasons/category-and-location---location.png';
+const dashboardBackground = 'https://www.morrisons.com/images/home/header-leaf-right.svg';
+const dashboardBackgroundLeft = 'https://www.morrisons.com/images/home/header-leaf-left.svg';
+
+const dashboardBgStyle = computed(() => ({
+    backgroundImage: `url(${dashboardBackground}), url(${dashboardBackgroundLeft})`,
+    backgroundRepeat: 'no-repeat, no-repeat',
+    backgroundPosition: 'right top, left bottom',
+    backgroundSize: '40%, 70%'
+}));
 
 const hasBankDetails = computed(() => {
     const details = user.value;
@@ -103,7 +112,7 @@ const submitWithdrawal = () => {
 
     <AuthenticatedLayout>
 
-        <div class="py-10">
+        <div class="py-10 relative" :style="dashboardBgStyle">
             <div class="max-w-7xl mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
                 <div class="relative overflow-hidden rounded-2xl bg-emerald-950 p-6 text-white shadow-lg">
                     <img
@@ -115,21 +124,17 @@ const submitWithdrawal = () => {
                     <div class="absolute -right-10 -top-14 h-40 w-40 rounded-full bg-white/5"></div>
                     <div class="absolute bottom-2 right-16 h-24 w-24 rounded-full bg-white/5"></div>
                     <div class="relative">
-                        <div class="text-xs font-semibold uppercase tracking-[0.15em] text-emerald-100">
-                            Account summary
-                        </div>
+                        
                         <div class="mt-3 text-lg font-semibold text-emerald-100">Available balance</div>
                         <div class="mt-2 text-[clamp(2.2rem,10vw,3rem)] font-bold leading-none sm:text-5xl">{{ formattedBalance }}</div>
-                        <div v-if="user" class="mt-3 break-words text-[11px] leading-4 text-emerald-200 sm:text-xs">
-                            Welcome back, <span class="font-semibold text-white">{{ user.name }}</span>
-                            <span class="text-emerald-200">({{ user.email }})</span>
-                        </div>
+                        
 
                         <div class="mt-5 flex flex-row flex-wrap items-center gap-2">
                             <Link
                                 :href="route('shares.buy')"
                                 class="inline-flex items-center rounded-md bg-white px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-900 transition hover:bg-emerald-50"
                             >
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrLhJJYrRl2-kWkb2COMUm474kWhz1NExBFzJeJOa14A&s" alt="invest" class="h-4 w-4 mr-2 object-contain" />
                                 Invest
                             </Link>
                             <button

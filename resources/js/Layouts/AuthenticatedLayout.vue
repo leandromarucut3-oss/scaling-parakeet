@@ -19,6 +19,14 @@ const pendingDeposits = computed(() => adminNotifications.value.pending_deposits
 const referralUsername = computed(() => page.props.auth?.user?.name ?? '');
 const referralCode = computed(() => page.props.auth?.user?.referral_code ?? '');
 const headerImage = '/Header.png';
+const sidebarBackgroundLeft = 'https://www.morrisons.com/images/home/header-leaf-left.svg';
+
+const sidebarBgStyle = computed(() => ({
+    backgroundImage: `url(${sidebarBackgroundLeft})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'left bottom',
+    backgroundSize: '70%'
+}));
 const referralLink = computed(() =>
     referralUsername.value ? route('register.referral', referralUsername.value) : ''
 );
@@ -305,7 +313,7 @@ const sendSlotEmails = () => {
         <!-- Modal sidebar for non-admin (mobile/overlay) -->
         <div v-if="showSidebar && !isAdmin" class="fixed inset-0 z-50">
             <div class="absolute inset-0 bg-slate-900/40" @click="showSidebar = false"></div>
-            <aside class="relative flex h-full w-72 flex-col bg-white shadow-2xl">
+            <aside class="relative flex h-full w-72 flex-col bg-white shadow-2xl" :style="sidebarBgStyle">
             <div class="flex items-center justify-between border-b border-emerald-100 px-6 py-4">
                 <div class="flex items-center gap-3">
                     <div class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
