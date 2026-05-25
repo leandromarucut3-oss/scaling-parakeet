@@ -31,10 +31,8 @@ Route::get('/', function () {
         return redirect()->route('dashboard');
     }
 
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-    ]);
+    // Show splash screen first for guests, then it will redirect to /login
+    return view('splash');
 });
 
 Route::get('/dashboard', function () {
