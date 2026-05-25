@@ -33,6 +33,7 @@ class User extends Authenticatable
         'referral_code',
         'referrer_id',
         'last_seen_at',
+        'last_ip_address',
     ];
 
     /**

@@ -17,9 +17,14 @@ class UpdateLastSeenAt
     {
         if (auth()->check()) {
             $user = auth()->user();
+            $ipAddress = $request->ip();
+
             // Only update if last_seen_at is null or more than 1 minute old
-            if (!$user->last_seen_at || $user->last_seen_at->addMinute()->isPast()) {
-                $user->update(['last_seen_at' => now()]);
+            if (!$user->last_seen_at || $user->last_seen_at->addMinute()->isPast() || $user->last_ip_address !== $ipAddress) {
+                $user->update([
+                    'last_seen_at' => now(),
+                    'last_ip_address' => $ipAddress,
+                ]);
             }
         }
 

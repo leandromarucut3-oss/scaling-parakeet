@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BlockedIp;
 use App\Models\Purchase;
 use App\Models\Transfer;
 use App\Models\User;
@@ -178,6 +179,10 @@ class UserManagementController extends Controller
             'bank_name' => $user->bank_name,
             'bank_account_name' => $user->bank_account_name,
             'bank_account_number' => $user->bank_account_number,
+            'last_ip_address' => $user->last_ip_address,
+            'is_ip_blocked' => $user->last_ip_address
+                ? BlockedIp::query()->where('ip_address', $user->last_ip_address)->exists()
+                : false,
             'referrer' => $user->referrer ? [
                 'id' => $user->referrer->id,
                 'name' => $user->referrer->name,
@@ -205,6 +210,35 @@ class UserManagementController extends Controller
         });
 
         return response()->json(['message' => 'Deposit deleted successfully.']);
+    }
+
+    public function blockUserIp(Request $request, User $user): JsonResponse
+    {
+        if (! $user->last_ip_address) {
+            return response()->json([
+                'message' => 'This user has no recorded IP address yet.',
+            ], 422);
+        }
+
+        if ($user->last_ip_address === $request->ip()) {
+            return response()->json([
+                'message' => 'This IP matches your current admin IP, so it was not blocked.',
+            ], 422);
+        }
+
+        BlockedIp::query()->updateOrCreate(
+            ['ip_address' => $user->last_ip_address],
+            [
+                'user_id' => $user->id,
+                'blocked_by_user_id' => $request->user()->id,
+                'reason' => 'Blocked from admin user account details.',
+            ]
+        );
+
+        return response()->json([
+            'message' => 'User IP address has been restricted.',
+            'ip_address' => $user->last_ip_address,
+        ]);
     }
 
     public function sendFunds(Request $request)

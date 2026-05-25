@@ -92,6 +92,9 @@ Route::middleware(['auth', 'role:admin'])
         Route::delete('/users/{user}/deposits/{purchase}', [UserManagementController::class, 'destroyDeposit'])
             ->name('users.deposit.destroy');
 
+        Route::post('/users/{user}/block-ip', [UserManagementController::class, 'blockUserIp'])
+            ->name('users.block-ip');
+
         Route::get('/recent-transactions', [UserManagementController::class, 'recentTransactions'])
             ->name('recent-transactions');
 
