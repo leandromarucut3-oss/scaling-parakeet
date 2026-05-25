@@ -12,6 +12,7 @@ const recentActivity = computed(() => page.props.recent_activity ?? []);
 const showBankNotice = ref(false);
 const showWithdrawModal = ref(false);
 const withdrawalSuccess = computed(() => page.props.flash?.withdrawal_success ?? '');
+const accountSummaryImage = 'https://my.morrisons.com/globalassets/hubs/more-reasons/category-and-location---location.png';
 
 const hasBankDetails = computed(() => {
     const details = user.value;
@@ -104,12 +105,13 @@ const submitWithdrawal = () => {
 
         <div class="py-10">
             <div class="max-w-7xl mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
-                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-800 p-6 text-white shadow-lg">
+                <div class="relative overflow-hidden rounded-2xl bg-emerald-950 p-6 text-white shadow-lg">
                     <img
-                        src="/logo.png"
+                        :src="accountSummaryImage"
                         alt=""
-                        class="absolute right-6 top-6 h-20 w-28 rounded-xl bg-white/10 p-3"
+                        class="absolute inset-0 h-full w-full object-cover object-center"
                     />
+                    <div class="absolute inset-0 bg-emerald-950/70"></div>
                     <div class="absolute -right-10 -top-14 h-40 w-40 rounded-full bg-white/5"></div>
                     <div class="absolute bottom-2 right-16 h-24 w-24 rounded-full bg-white/5"></div>
                     <div class="relative">
@@ -177,13 +179,21 @@ const submitWithdrawal = () => {
                         <div class="mt-2 text-xs text-slate-500">Balance plus invested capital.</div>
                     </div>
 
-                    <div class="rounded-2xl bg-emerald-900 p-5 text-white shadow-lg">
-                        <div class="text-[11px] font-semibold uppercase tracking-[0.15em] text-emerald-100">
-                            Daily interest
-                        </div>
-                        <div class="mt-2 text-2xl font-bold">{{ formattedDailyInterest }}</div>
-                        <div class="mt-2 text-xs text-emerald-100">
-                            Total interest earned: <span class="font-semibold text-white">{{ formattedInterestEarned }}</span>
+                    <div class="relative overflow-hidden rounded-2xl bg-emerald-950 p-5 text-white shadow-lg">
+                        <img
+                            :src="accountSummaryImage"
+                            alt=""
+                            class="absolute inset-0 h-full w-full object-cover object-center"
+                        />
+                        <div class="absolute inset-0 bg-emerald-950/70"></div>
+                        <div class="relative">
+                            <div class="text-[11px] font-semibold uppercase tracking-[0.15em] text-emerald-100">
+                                Daily interest
+                            </div>
+                            <div class="mt-2 text-2xl font-bold">{{ formattedDailyInterest }}</div>
+                            <div class="mt-2 text-xs text-emerald-100">
+                                Total interest earned: <span class="font-semibold text-white">{{ formattedInterestEarned }}</span>
+                            </div>
                         </div>
                     </div>
 

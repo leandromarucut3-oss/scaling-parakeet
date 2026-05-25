@@ -18,6 +18,7 @@ const pendingWithdrawals = computed(() => adminNotifications.value.pending_withd
 const pendingDeposits = computed(() => adminNotifications.value.pending_deposits ?? 0);
 const referralUsername = computed(() => page.props.auth?.user?.name ?? '');
 const referralCode = computed(() => page.props.auth?.user?.referral_code ?? '');
+const headerImage = '/Header.png';
 const referralLink = computed(() =>
     referralUsername.value ? route('register.referral', referralUsername.value) : ''
 );
@@ -83,11 +84,14 @@ const sendSlotEmails = () => {
 <template>
     <div>
         <div :class="['min-h-screen bg-[#f4f6f4]', isAdmin ? 'ml-72' : '']">
-            <nav class="relative overflow-hidden bg-emerald-800 border-b border-emerald-900/20">
-                <div class="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-emerald-900/40"></div>
-                <div class="pointer-events-none absolute right-10 top-6 h-28 w-40 -rotate-12 rounded-full bg-emerald-900/45"></div>
-                <div class="pointer-events-none absolute left-1/2 top-8 h-16 w-24 -translate-x-1/2 -rotate-12 rounded-full bg-amber-400/90"></div>
-                <div class="absolute right-6 top-4 z-20 hidden sm:block">
+            <nav class="relative min-h-[124px] overflow-hidden bg-emerald-950 border-b border-emerald-900/20 sm:min-h-[150px]">
+                <img
+                    :src="headerImage"
+                    alt=""
+                    class="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+                />
+                <div class="pointer-events-none absolute inset-0 bg-emerald-950/10"></div>
+                <div class="absolute right-6 top-4 z-30 hidden sm:block">
                     <a
                         href="https://www.morrisons-corporate.com/About-us/"
                         target="_blank"
@@ -98,7 +102,7 @@ const sendSlotEmails = () => {
                     </a>
                 </div>
                 <!-- Primary Navigation Menu -->
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="absolute inset-x-0 top-0 z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center justify-between min-h-[6rem]">
                         <div class="flex">
                             <!-- Logo -->

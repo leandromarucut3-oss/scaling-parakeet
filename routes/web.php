@@ -31,7 +31,10 @@ Route::get('/', function () {
         return redirect()->route('dashboard');
     }
 
-    return redirect()->route('login');
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+    ]);
 });
 
 Route::get('/dashboard', function () {

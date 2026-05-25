@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\BlockedIp;
 use Closure;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -13,8 +14,14 @@ class BlockRestrictedIp
     {
         $ipAddress = $request->ip();
 
-        if ($ipAddress && BlockedIp::query()->where('ip_address', $ipAddress)->exists()) {
-            abort(403, 'Access to this website has been restricted.');
+        if ($ipAddress) {
+            try {
+                if (BlockedIp::query()->where('ip_address', $ipAddress)->exists()) {
+                    abort(403, 'Access to this website has been restricted.');
+                }
+            } catch (QueryException) {
+                return $next($request);
+            }
         }
 
         return $next($request);

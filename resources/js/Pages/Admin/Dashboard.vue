@@ -15,6 +15,7 @@ const props = defineProps({
     },
 });
 
+const adminHeaderImage = 'https://my.morrisons.com/globalassets/hubs/make-good-things-happen/morrisons_mgth_lp_header_768x360-2.jpg';
 const search = ref('');
 let usersRefreshTimer = null;
 
@@ -228,6 +229,24 @@ const deleteDeposit = async (depositId) => {
     <AuthenticatedLayout>
         <div class="py-10">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-6 overflow-hidden rounded-2xl bg-emerald-950 shadow-lg ring-1 ring-emerald-900/20">
+                    <div class="relative min-h-[210px] sm:min-h-[260px]">
+                        <img
+                            :src="adminHeaderImage"
+                            alt="Morrisons Make Good Things Happen"
+                            class="absolute inset-0 h-full w-full object-cover"
+                        />
+                        <div class="absolute inset-0 bg-gradient-to-r from-emerald-950/85 via-emerald-950/45 to-transparent"></div>
+                        <div class="relative flex min-h-[210px] max-w-2xl flex-col justify-end px-6 py-8 text-white sm:min-h-[260px] sm:px-8">
+                            <p class="text-xs font-semibold uppercase tracking-[0.3em] text-amber-200">Admin Dashboard</p>
+                            <h1 class="mt-3 text-3xl font-bold leading-tight sm:text-4xl">Make good things happen</h1>
+                            <p class="mt-3 max-w-xl text-sm leading-6 text-emerald-50 sm:text-base">
+                                Review users, balances, package activity, and account actions from one place.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="rounded-2xl bg-white/95 p-6 shadow-lg ring-1 ring-emerald-100">
                     <div class="flex flex-wrap items-center justify-between gap-4">
                         <div>
