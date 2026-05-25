@@ -83,6 +83,13 @@ class UserManagementController extends Controller
                 'created_at' => optional($purchase->created_at)->toDateTimeString(),
                 'type' => 'purchase',
                 'description' => $purchase->plan_name ? "Package: {$purchase->plan_name}" : 'Package purchase',
+                'payment_method' => $purchase->payment_method,
+                'payment_source' => match ($purchase->payment_method) {
+                    'account_balance' => 'Paid by account balance',
+                    'bank_transfer' => 'Paid by bank transfer',
+                    'admin_grant' => 'Activated by admin',
+                    default => 'Payment method not available',
+                },
                 'is_new' => $purchase->status === 'pending',
             ]);
 
@@ -345,6 +352,13 @@ class UserManagementController extends Controller
                 'created_at' => optional($purchase->created_at)->toDateTimeString(),
                 'type' => 'purchase',
                 'description' => $purchase->plan_name ? "Package: {$purchase->plan_name}" : 'Package purchase',
+                'payment_method' => $purchase->payment_method,
+                'payment_source' => match ($purchase->payment_method) {
+                    'account_balance' => 'Paid by account balance',
+                    'bank_transfer' => 'Paid by bank transfer',
+                    'admin_grant' => 'Activated by admin',
+                    default => 'Payment method not available',
+                },
                 'is_new' => $purchase->status === 'pending',
             ]);
 

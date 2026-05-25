@@ -118,12 +118,18 @@ const showUserModal = ref(false);
 const selectedUser = ref(null);
 const loadingUser = ref(false);
 const userError = ref('');
+const activeHistorySection = ref('deposit');
+
+const toggleHistorySection = (section) => {
+    activeHistorySection.value = activeHistorySection.value === section ? '' : section;
+};
 
 const openUserModal = async (user) => {
     showUserModal.value = true;
     selectedUser.value = null;
     userError.value = '';
     loadingUser.value = true;
+    activeHistorySection.value = 'deposit';
 
     try {
         const response = await window.axios.get(route('admin.users.show', { user: user.id }));
@@ -140,6 +146,7 @@ const closeUserModal = () => {
     selectedUser.value = null;
     userError.value = '';
     loadingUser.value = false;
+    activeHistorySection.value = 'deposit';
 };
 
 const showRecoverModal = ref(false);
@@ -379,16 +386,24 @@ const deleteDeposit = async (depositId) => {
                             </div>
                         </div>
 
-                        <div class="mt-6 grid gap-6 xl:grid-cols-3">
-                            <section class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-                                <div class="mb-4 flex items-center justify-between">
-                                    <div>
-                                        <h3 class="text-sm font-semibold text-slate-900">Deposit history</h3>
-                                        <p class="text-xs text-slate-500">Recent deposits made by this user.</p>
-                                    </div>
-                                </div>
-                                <div class="overflow-hidden rounded-3xl border border-slate-200">
-                                    <table class="w-full border-collapse text-sm">
+                        <div class="mt-6 space-y-3">
+                            <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                                <button
+                                    type="button"
+                                    class="flex w-full items-center justify-between gap-4 bg-white px-5 py-4 text-left hover:bg-slate-50"
+                                    @click="toggleHistorySection('deposit')"
+                                >
+                                    <span>
+                                        <span class="block text-sm font-semibold text-slate-900">Deposit history</span>
+                                        <span class="mt-1 block text-xs text-slate-500">Recent deposits made by this user.</span>
+                                    </span>
+                                    <span class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                                        {{ activeHistorySection === 'deposit' ? 'Hide' : 'Show' }}
+                                    </span>
+                                </button>
+                                <div v-if="activeHistorySection === 'deposit'" class="border-t border-slate-200 p-4">
+                                    <div class="overflow-x-auto rounded-3xl border border-slate-200">
+                                        <table class="min-w-[760px] w-full border-collapse text-sm">
                                         <thead class="bg-slate-50 text-slate-800">
                                             <tr>
                                                 <th class="px-3 py-3 text-left uppercase tracking-[0.18em] text-[0.65rem]">Date</th>
@@ -421,19 +436,28 @@ const deleteDeposit = async (depositId) => {
                                                 <td class="px-3 py-6 text-center text-sm text-slate-500" colspan="5">No deposit history available.</td>
                                             </tr>
                                         </tbody>
-                                    </table>
+                                        </table>
+                                    </div>
                                 </div>
                             </section>
 
-                            <section class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-                                <div class="mb-4 flex items-center justify-between">
-                                    <div>
-                                        <h3 class="text-sm font-semibold text-slate-900">Withdrawal history</h3>
-                                        <p class="text-xs text-slate-500">Recent withdrawal requests by this user.</p>
-                                    </div>
-                                </div>
-                                <div class="overflow-hidden rounded-3xl border border-slate-200">
-                                    <table class="w-full border-collapse text-sm">
+                            <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                                <button
+                                    type="button"
+                                    class="flex w-full items-center justify-between gap-4 bg-white px-5 py-4 text-left hover:bg-slate-50"
+                                    @click="toggleHistorySection('withdrawal')"
+                                >
+                                    <span>
+                                        <span class="block text-sm font-semibold text-slate-900">Withdrawal history</span>
+                                        <span class="mt-1 block text-xs text-slate-500">Recent withdrawal requests by this user.</span>
+                                    </span>
+                                    <span class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                                        {{ activeHistorySection === 'withdrawal' ? 'Hide' : 'Show' }}
+                                    </span>
+                                </button>
+                                <div v-if="activeHistorySection === 'withdrawal'" class="border-t border-slate-200 p-4">
+                                    <div class="overflow-x-auto rounded-3xl border border-slate-200">
+                                        <table class="min-w-[680px] w-full border-collapse text-sm">
                                         <thead class="bg-slate-50 text-slate-800">
                                             <tr>
                                                 <th class="px-3 py-3 text-left uppercase tracking-[0.18em] text-[0.65rem]">Date</th>
@@ -456,19 +480,28 @@ const deleteDeposit = async (depositId) => {
                                                 <td class="px-3 py-6 text-center text-sm text-slate-500" colspan="4">No withdrawal history available.</td>
                                             </tr>
                                         </tbody>
-                                    </table>
+                                        </table>
+                                    </div>
                                 </div>
                             </section>
 
-                            <section class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-                                <div class="mb-4 flex items-center justify-between">
-                                    <div>
-                                        <h3 class="text-sm font-semibold text-slate-900">Transfer funds history</h3>
-                                        <p class="text-xs text-slate-500">Recent sent and received transfers for this user.</p>
-                                    </div>
-                                </div>
-                                <div class="overflow-hidden rounded-3xl border border-slate-200">
-                                    <table class="w-full border-collapse text-sm">
+                            <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                                <button
+                                    type="button"
+                                    class="flex w-full items-center justify-between gap-4 bg-white px-5 py-4 text-left hover:bg-slate-50"
+                                    @click="toggleHistorySection('transfer')"
+                                >
+                                    <span>
+                                        <span class="block text-sm font-semibold text-slate-900">Transfer funds history</span>
+                                        <span class="mt-1 block text-xs text-slate-500">Recent sent and received transfers for this user.</span>
+                                    </span>
+                                    <span class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                                        {{ activeHistorySection === 'transfer' ? 'Hide' : 'Show' }}
+                                    </span>
+                                </button>
+                                <div v-if="activeHistorySection === 'transfer'" class="border-t border-slate-200 p-4">
+                                    <div class="overflow-x-auto rounded-3xl border border-slate-200">
+                                        <table class="min-w-[860px] w-full border-collapse text-sm">
                                         <thead class="bg-slate-50 text-slate-800">
                                             <tr>
                                                 <th class="px-3 py-3 text-left uppercase tracking-[0.18em] text-[0.65rem]">Date</th>
@@ -502,7 +535,8 @@ const deleteDeposit = async (depositId) => {
                                                 <td class="px-3 py-6 text-center text-sm text-slate-500" colspan="5">No transfer funds history available.</td>
                                             </tr>
                                         </tbody>
-                                    </table>
+                                        </table>
+                                    </div>
                                 </div>
                             </section>
                         </div>

@@ -67,7 +67,12 @@ const formatDateTime = (value) => {
                                             <div class="text-xs text-slate-500">{{ transaction.user?.email || '' }}</div>
                                         </td>
                                         <td class="px-4 py-4 text-sm text-emerald-800 uppercase tracking-[0.12em]">{{ transaction.type }}</td>
-                                        <td class="px-4 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">{{ transaction.status }}</td>
+                                        <td class="px-4 py-4">
+                                            <div class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">{{ transaction.status }}</div>
+                                            <div v-if="transaction.payment_source" class="mt-1 text-xs font-medium normal-case tracking-normal text-slate-500">
+                                                {{ transaction.payment_source }}
+                                            </div>
+                                        </td>
                                         <td class="px-4 py-4 text-xs text-slate-500">{{ formatDateTime(transaction.created_at) }}</td>
                                         <td class="px-4 py-4 text-right font-semibold text-emerald-950">{{ formatCurrency(transaction.amount_cents) }}</td>
                                     </tr>
