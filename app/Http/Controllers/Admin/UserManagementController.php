@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -220,6 +221,13 @@ class UserManagementController extends Controller
         return Inertia::render('Admin/PackageSlots', [
             'packages' => $service->getPackageSlotDetails(),
         ]);
+    }
+
+    public function sendSlotEmails(Request $request): RedirectResponse
+    {
+        Artisan::call('slots:send-availability-emails');
+
+        return back()->with('success', trim(Artisan::output()) ?: 'Remaining slot emails sent successfully.');
     }
 
     public function updatePackageSlots(Request $request)

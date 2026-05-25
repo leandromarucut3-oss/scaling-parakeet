@@ -21,6 +21,7 @@ const referralCode = computed(() => page.props.auth?.user?.referral_code ?? '');
 const referralLink = computed(() =>
     referralUsername.value ? route('register.referral', referralUsername.value) : ''
 );
+const slotEmailForm = useForm({});
 
 const franchiseForm = useForm({
     name: '',
@@ -65,6 +66,16 @@ const submitFranchiseApplication = () => {
             franchiseForm.reset();
             showFranchiseModal.value = false;
         },
+    });
+};
+
+const sendSlotEmails = () => {
+    if (!window.confirm('Send the remaining slots email to all users now?')) {
+        return;
+    }
+
+    slotEmailForm.post(route('admin.slot-emails.send'), {
+        preserveScroll: true,
     });
 };
 </script>
@@ -248,6 +259,22 @@ const submitFranchiseApplication = () => {
                     <span>Available slots</span>
                     <span class="text-xs text-emerald-700">Go</span>
                 </Link>
+                <button
+                    v-if="isAdmin"
+                    type="button"
+                    class="flex w-full items-center justify-between rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-emerald-950 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-70"
+                    :disabled="slotEmailForm.processing"
+                    @click="sendSlotEmails"
+                >
+                    <span>{{ slotEmailForm.processing ? 'Sending email...' : 'Send Email' }}</span>
+                    <span class="text-xs text-emerald-700">{{ slotEmailForm.processing ? 'Wait' : 'Send' }}</span>
+                </button>
+                <div
+                    v-if="slotEmailForm.recentlySuccessful"
+                    class="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs text-emerald-800"
+                >
+                    Remaining slot emails sent.
+                </div>
                 <Link
                     v-if="isAdmin"
                     :href="route('admin.recent-transactions')"
