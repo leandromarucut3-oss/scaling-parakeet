@@ -10,6 +10,7 @@ import { Link, useForm, usePage } from '@inertiajs/vue3';
 const showingNavigationDropdown = ref(false);
 const showSidebar = ref(false);
 const showFranchiseModal = ref(false);
+const showSlotEmailPasswordModal = ref(false);
 const referralShared = ref(false);
 const page = usePage();
 const isAdmin = computed(() => page.props.auth?.user?.roles?.includes('admin'));
@@ -30,7 +31,9 @@ const sidebarBgStyle = computed(() => ({
 const referralLink = computed(() =>
     referralUsername.value ? route('register.referral', referralUsername.value) : ''
 );
-const slotEmailForm = useForm({});
+const slotEmailForm = useForm({
+    password: '',
+});
 
 const franchiseForm = useForm({
     name: '',
@@ -83,8 +86,19 @@ const sendSlotEmails = () => {
         return;
     }
 
+    showSlotEmailPasswordModal.value = true;
+};
+
+const submitSlotEmails = () => {
     slotEmailForm.post(route('admin.slot-emails.send'), {
         preserveScroll: true,
+        onSuccess: () => {
+            slotEmailForm.reset('password');
+            showSlotEmailPasswordModal.value = false;
+        },
+        onFinish: () => {
+            slotEmailForm.reset('password');
+        },
     });
 };
 </script>
@@ -456,9 +470,57 @@ const sendSlotEmails = () => {
                 </Link>
             </div>
         </aside>
-    </div>
+        </div>
 
-    <!-- Franchise Application Modal -->
+        <div v-if="showSlotEmailPasswordModal && isAdmin" class="fixed inset-0 z-50">
+            <div class="absolute inset-0 bg-slate-900/50" @click="showSlotEmailPasswordModal = false"></div>
+            <div class="relative flex min-h-screen items-center justify-center px-4">
+                <form
+                    class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+                    @submit.prevent="submitSlotEmails"
+                >
+                    <div class="text-sm font-semibold text-emerald-950">Confirm send email</div>
+                    <p class="mt-2 text-sm text-slate-600">
+                        Enter your admin password before sending the remaining slots email to all users.
+                    </p>
+
+                    <label class="mt-5 block text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700" for="slot_email_password">
+                        Admin password
+                    </label>
+                    <input
+                        id="slot_email_password"
+                        v-model="slotEmailForm.password"
+                        type="password"
+                        autocomplete="current-password"
+                        class="mt-2 w-full rounded-lg border border-emerald-100 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
+                        required
+                    />
+                    <div v-if="slotEmailForm.errors.password" class="mt-2 text-xs text-rose-600">
+                        {{ slotEmailForm.errors.password }}
+                    </div>
+
+                    <div class="mt-6 flex gap-3">
+                        <button
+                            type="submit"
+                            class="flex-1 rounded-lg bg-emerald-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-70"
+                            :disabled="slotEmailForm.processing"
+                        >
+                            {{ slotEmailForm.processing ? 'Sending...' : 'Send Email' }}
+                        </button>
+                        <button
+                            type="button"
+                            class="flex-1 rounded-lg border border-emerald-100 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-emerald-900"
+                            :disabled="slotEmailForm.processing"
+                            @click="showSlotEmailPasswordModal = false; slotEmailForm.reset('password'); slotEmailForm.clearErrors()"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Franchise Application Modal -->
     <div v-if="showFranchiseModal" class="fixed inset-0 z-50">
         <div class="absolute inset-0 bg-slate-900/50" @click="showFranchiseModal = false"></div>
         <div class="relative flex min-h-screen items-center justify-center px-4">

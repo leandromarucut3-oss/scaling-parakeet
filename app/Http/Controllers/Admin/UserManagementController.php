@@ -280,6 +280,10 @@ class UserManagementController extends Controller
 
     public function sendSlotEmails(Request $request): RedirectResponse
     {
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ]);
+
         Artisan::call('slots:send-availability-emails');
 
         return back()->with('success', trim(Artisan::output()) ?: 'Remaining slot emails sent successfully.');
