@@ -148,11 +148,16 @@ const closeUserModal = () => {
     userError.value = '';
     loadingUser.value = false;
     activeHistorySection.value = 'deposit';
+    showDeleteUserModal.value = false;
+    deleteUserPassword.value = '';
 };
 
 const showRecoverModal = ref(false);
 const recoverAmount = ref('');
 const recoverReason = ref('');
+const showDeleteUserModal = ref(false);
+const deleteUserPassword = ref('');
+const deleteUserProcessing = ref(false);
 
 const submitRecover = async () => {
     if (!selectedUser.value) return;
@@ -169,6 +174,40 @@ const submitRecover = async () => {
         recoverReason.value = '';
     } catch (err) {
         userError.value = 'Unable to recover funds. ' + (err?.response?.data?.message || '');
+    }
+};
+
+const closeDeleteUserModal = () => {
+    showDeleteUserModal.value = false;
+    deleteUserPassword.value = '';
+    userError.value = '';
+};
+
+const deleteSelectedUser = async () => {
+    if (!selectedUser.value || deleteUserProcessing.value) {
+        return;
+    }
+
+    userError.value = '';
+    deleteUserProcessing.value = true;
+
+    try {
+        await window.axios.delete(route('admin.users.destroy', { user: selectedUser.value.id }), {
+            data: {
+                password: deleteUserPassword.value,
+            },
+        });
+
+        closeDeleteUserModal();
+        closeUserModal();
+        router.reload({
+            only: ['users'],
+            preserveScroll: true,
+        });
+    } catch (err) {
+        userError.value = err?.response?.data?.message || err?.response?.data?.errors?.password?.[0] || 'Unable to delete this user account.';
+    } finally {
+        deleteUserProcessing.value = false;
     }
 };
 
@@ -379,6 +418,47 @@ const deleteDeposit = async (depositId) => {
                         </div>
                     </div>
 
+                    <div v-if="showDeleteUserModal" class="fixed inset-0 z-60 flex items-center justify-center px-4">
+                        <div class="absolute inset-0 bg-black/50" @click="closeDeleteUserModal"></div>
+                        <form class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-lg" @submit.prevent="deleteSelectedUser">
+                            <h3 class="text-lg font-semibold text-slate-950">Delete user account</h3>
+                            <p class="mt-2 text-sm text-slate-600">
+                                This will permanently remove {{ selectedUser?.name }} from the system. They can register again later using the normal registration flow.
+                            </p>
+                            <label class="mt-5 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-600" for="delete_user_password">
+                                Admin password
+                            </label>
+                            <input
+                                id="delete_user_password"
+                                v-model="deleteUserPassword"
+                                type="password"
+                                autocomplete="current-password"
+                                class="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-rose-500 focus:ring-rose-500"
+                                required
+                            />
+                            <div v-if="userError" class="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                                {{ userError }}
+                            </div>
+                            <div class="mt-5 flex justify-end gap-2">
+                                <button
+                                    type="button"
+                                    class="rounded-md border px-3 py-2 text-sm font-semibold text-slate-700"
+                                    :disabled="deleteUserProcessing"
+                                    @click="closeDeleteUserModal"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    class="rounded-md bg-rose-600 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-70"
+                                    :disabled="deleteUserProcessing"
+                                >
+                                    {{ deleteUserProcessing ? 'Deleting...' : 'Delete account' }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
                     <template v-else-if="userError">
                         <div class="rounded-3xl border border-rose-100 bg-rose-50 p-6 text-sm text-rose-700">
                             {{ userError }}
@@ -403,6 +483,14 @@ const deleteDeposit = async (depositId) => {
                                     @click.stop="blockUserIp"
                                 >
                                     {{ selectedUser.is_ip_blocked ? 'IP restricted' : 'Restrict IP' }}
+                                </button>
+                                <button
+                                    v-if="selectedUser.can_restrict_ip"
+                                    type="button"
+                                    class="ml-2 mt-3 rounded-md bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-700"
+                                    @click.stop="showDeleteUserModal = true; userError = ''"
+                                >
+                                    Delete account
                                 </button>
                             </div>
                             <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">

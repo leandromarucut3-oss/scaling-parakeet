@@ -214,6 +214,39 @@ class UserManagementController extends Controller
         return response()->json(['message' => 'Deposit deleted successfully.']);
     }
 
+    public function destroyUser(Request $request, User $user): JsonResponse
+    {
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ]);
+
+        if ($user->hasRole('admin')) {
+            return response()->json([
+                'message' => 'Admin accounts cannot be deleted from this action.',
+            ], 422);
+        }
+
+        $userId = $user->id;
+
+        DB::transaction(function () use ($user, $userId): void {
+            DB::table('sessions')
+                ->where('user_id', $userId)
+                ->delete();
+
+            DB::table('admin_adjustments')
+                ->where('user_id', $userId)
+                ->orWhere('admin_id', $userId)
+                ->delete();
+
+            $user->tokens()->delete();
+            $user->syncRoles([]);
+            $user->syncPermissions([]);
+            $user->delete();
+        });
+
+        return response()->json(['message' => 'User account deleted successfully.']);
+    }
+
     public function blockUserIp(Request $request, User $user): JsonResponse
     {
         $data = $request->validate([

@@ -90,6 +90,9 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/users/{user}', [UserManagementController::class, 'show'])
             ->name('users.show');
 
+        Route::delete('/users/{user}', [UserManagementController::class, 'destroyUser'])
+            ->name('users.destroy');
+
         Route::delete('/users/{user}/deposits/{purchase}', [UserManagementController::class, 'destroyDeposit'])
             ->name('users.deposit.destroy');
 
