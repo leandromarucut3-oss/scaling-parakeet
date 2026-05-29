@@ -7,6 +7,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -50,10 +51,25 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+        $userId = $user->id;
 
         Auth::logout();
 
-        $user->delete();
+        DB::transaction(function () use ($user, $userId): void {
+            DB::table('sessions')
+                ->where('user_id', $userId)
+                ->delete();
+
+            DB::table('admin_adjustments')
+                ->where('user_id', $userId)
+                ->orWhere('admin_id', $userId)
+                ->delete();
+
+            $user->tokens()->delete();
+            $user->syncRoles([]);
+            $user->syncPermissions([]);
+            $user->delete();
+        });
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
