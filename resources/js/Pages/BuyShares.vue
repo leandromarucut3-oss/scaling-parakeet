@@ -73,15 +73,6 @@ const bankOptions = [
         qrData: 'BPI Savings Morrisons 4059053788',
     },
     {
-        key: 'bdo',
-        name: 'BDO Savings',
-        accountName: 'Morrisons',
-        logo: '/MOBILE BANNER_560_x_560_px_BDO.jpg',
-        detailsImage: '/BDO.jpg',
-        accountNumber: '010306001276',
-        qrData: 'BDO Savings Morrisons 010306001276',
-    },
-    {
         key: 'security',
         name: 'Security Bank',
         accountName: 'Morrisons',
